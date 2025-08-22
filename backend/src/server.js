@@ -172,18 +172,20 @@ app.get('/api/test', (req, res) => {
   }
 });
 
-// Test endpoint with authentication
-app.get('/api/test-auth', protect, (req, res) => {
-  try {
-    res.json({ 
-      status: 'Authentication working',
-      user: req.user,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Auth test failed' });
-  }
-});
+// Test endpoint with authentication (temporarily disabled)
+// app.get('/api/test-auth', protect, (req, res) => {
+//   try {
+//     res.json({ 
+//       status: 'Authentication working',
+//       user: req.user,
+//       timestamp: new Date().toISOString()
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Auth test failed' });
+//   }
+// });
+
+console.log('🔧 Auth test endpoint temporarily disabled');
 
 app.get('/api/demo/monthly-planning/:month', (req, res) => {
   try {
