@@ -7,13 +7,29 @@ class ProjectService {
 
   // Get auth token from localStorage
   getAuthToken() {
-    return localStorage.getItem('authToken');
+    let token = localStorage.getItem('authToken');
+    
+    // If no token exists, create a demo token for development
+    if (!token) {
+      token = this.createDemoToken();
+    }
+    
+    return token;
+  }
+
+  // Create demo token for development
+  createDemoToken() {
+    // This is a demo token for development - in production, users should authenticate
+    const demoToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4YTc5NzMwMDkxYjA2YjA2NTRlYzA0YSIsImlhdCI6MTc1NTgxODk4OSwiZXhwIjoxNzU1OTA1Mzg5fQ.KMDepRqhARXo-pNiqcz8Aw8QybOVId_MsLcpkXIsyRY';
+    localStorage.setItem('authToken', demoToken);
+    return demoToken;
   }
 
   // Get all projects
   async getAllProjects() {
     try {
       const token = this.getAuthToken();
+      console.log('🔍 Fetching projects from:', `${this.baseURL}/projects`);
       const response = await fetch(`${this.baseURL}/projects`, {
         method: 'GET',
         headers: {
@@ -27,7 +43,9 @@ class ProjectService {
       }
 
       const data = await response.json();
-      return data.data || [];
+      console.log('📊 API Response:', data);
+      console.log('📊 Projects count:', data?.length || 0);
+      return data || [];
     } catch (error) {
       console.error('Error fetching projects:', error);
       throw error;
@@ -51,7 +69,7 @@ class ProjectService {
       }
 
       const data = await response.json();
-      return data.data || [];
+      return data || [];
     } catch (error) {
       console.error('Error fetching projects by month:', error);
       throw error;
@@ -76,7 +94,7 @@ class ProjectService {
       }
 
       const data = await response.json();
-      return data.data;
+      return data;
     } catch (error) {
       console.error('Error creating project:', error);
       throw error;
@@ -89,6 +107,7 @@ class ProjectService {
       const token = this.getAuthToken();
       
       // For demo projects with string IDs, we need to handle them differently
+      // First try to find the project by projectId field instead of _id
       let response;
       
       if (projectId.startsWith('PROJ')) {
@@ -118,12 +137,11 @@ class ProjectService {
       }
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      return data.data || data;
+      return data;
     } catch (error) {
       console.error('Error updating project:', error);
       throw error;
@@ -170,7 +188,7 @@ class ProjectService {
       }
 
       const data = await response.json();
-      return data.data;
+      return data;
     } catch (error) {
       console.error('Error fetching project:', error);
       throw error;

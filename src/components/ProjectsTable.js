@@ -165,8 +165,22 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
     setOpenActionMenu(null);
   };
 
-  const toggleActionMenu = (projectId) => {
-    setOpenActionMenu(openActionMenu === projectId ? null : projectId);
+  const toggleActionMenu = (projectId, event) => {
+    if (openActionMenu === projectId) {
+      setOpenActionMenu(null);
+    } else {
+      setOpenActionMenu(projectId);
+      // Position the dropdown relative to the button
+      setTimeout(() => {
+        const button = event.currentTarget;
+        const dropdown = document.querySelector('.action-dropdown');
+        if (dropdown && button) {
+          const rect = button.getBoundingClientRect();
+          dropdown.style.top = `${rect.bottom + 5}px`;
+          dropdown.style.left = `${rect.right - dropdown.offsetWidth}px`;
+        }
+      }, 0);
+    }
   };
 
   // Close menu when clicking outside
@@ -320,21 +334,20 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="relative action-menu-container" style={{ zIndex: 9999, isolation: 'isolate' }}>
                       <button 
-                        onClick={() => toggleActionMenu(project.id)}
+                        onClick={(e) => toggleActionMenu(project.id, e)}
                         className="action-button"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
                       
                       {openActionMenu === project.id && (
-                        <div className="action-dropdown absolute w-56 bg-gray-800 rounded-lg shadow-xl border border-white border-opacity-20 backdrop-blur-lg"
+                        <div className="action-dropdown fixed w-56 bg-gray-800 rounded-lg shadow-xl border border-white border-opacity-20 backdrop-blur-lg pointer-events-auto"
                              style={{ 
-                               position: 'absolute',
+                               position: 'fixed',
                                zIndex: 999999,
                                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
-                               top: '100%',
-                               right: '0',
-                               marginTop: '0.5rem'
+                               top: 'auto',
+                               left: 'auto'
                              }}>
                           <div className="py-2">
                             <button 

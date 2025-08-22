@@ -10,7 +10,7 @@ import {
 import Sidebar from '../components/Sidebar';
 import AddProjectModal from '../components/AddProjectModal';
 import ProjectsTable from '../components/ProjectsTable';
-import { demoProjects, projectCategories, projectStatuses, projectPriorities } from '../data/demoData';
+import { projectCategories, projectStatuses, projectPriorities } from '../utils/constants';
 import projectService from '../services/projectService';
 
 const ProjectsPage = () => {
@@ -46,14 +46,13 @@ const ProjectsPage = () => {
           console.log('✅ Loaded projects from database:', dbProjects.length);
           setProjects(dbProjects);
         } else {
-          console.log('⚠️ No projects in database, using demo data');
-          setProjects(demoProjects);
+          console.log('⚠️ No projects in database');
+          setProjects([]);
         }
       } catch (error) {
         console.error('❌ Error loading projects:', error);
         setError(error.message);
-        // Fallback to demo data
-        setProjects(demoProjects);
+        setProjects([]);
       } finally {
         setLoading(false);
       }

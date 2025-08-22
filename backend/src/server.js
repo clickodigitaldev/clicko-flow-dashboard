@@ -2,33 +2,62 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const path = require('path');
+const morgan = require('morgan');
 require('dotenv').config();
+
+const authRoutes = require('./routes/auth');
+const projectRoutes = require('./routes/projects');
+const settingsRoutes = require('./routes/settings');
+const forecastRoutes = require('./routes/forecast');
+const salesmateRoutes = require('./routes/salesmate');
+const monthlyPlanningRoutes = require('./routes/monthlyPlanning');
 
 const app = express();
 
-// Security middleware
+// Middleware
 app.use(helmet());
-app.use(cors());
+app.use(morgan('combined'));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use('/api/', limiter);
+// CORS configuration - allow both localhost and production domains
+const allowedOrigins = [
+  'http://localhost:3000', 
+  'http://localhost:3001',
+  process.env.CORS_ORIGIN,
+  'https://clicko-flow-frontend.onrender.com',
+  'https://clicko-flow-api.onrender.com'
+].filter(Boolean);
 
-// Body parser middleware
-app.use(express.json());
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-// Connect to MongoDB
+// Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-flow', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB Connected'))
-.catch(err => console.log('MongoDB connection error:', err));
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/forecast', forecastRoutes);
+app.use('/api/salesmate', salesmateRoutes);
+app.use('/api/monthly-planning', monthlyPlanningRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -39,27 +68,24 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/projects', require('./routes/projects'));
-app.use('/api/monthly-planning', require('./routes/monthlyPlanning'));
-app.use('/api/forecast', require('./routes/forecast'));
-app.use('/api/settings', require('./routes/settings'));
-app.use('/api/salesmate', require('./routes/salesmate'));
-
-// Serve static files from the React app in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../../public')));
-
-  // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../public', 'index.html'));
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    error: 'Something went wrong!',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
   });
-}
+});
 
-const PORT = process.env.PORT || 5001;
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 API available at http://localhost:${PORT}/api`);
+  console.log(`🏥 Health check at http://localhost:${PORT}/api/health`);
 });

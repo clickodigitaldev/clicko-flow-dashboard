@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, TrendingDown, Calculator, Save, ArrowLeft, ArrowRight, Plus, Trash2 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import monthlyPlanningService from '../services/monthlyPlanningService';
-import { defaultOverhead, defaultRevenueStreams, defaultGeneralExpenses } from '../data/demoData';
+import { defaultOverhead, defaultRevenueStreams, defaultGeneralExpenses } from '../utils/constants';
 
 const MonthlyPlanningPage = () => {
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);

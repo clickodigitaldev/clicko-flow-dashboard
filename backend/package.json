@@ -1,29 +1,38 @@
 {
   "name": "clicko-flow-backend",
   "version": "1.0.0",
-  "description": "Backend API for Clicko Flow Dashboard",
+  "description": "Backend API for Clicko Flow project management and financial planning",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "build": "echo 'Backend build completed'",
-    "test": "echo 'No tests specified'"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "project-management",
+    "financial-planning",
+    "dashboard",
+    "api"
+  ],
+  "author": "Clicko Flow Team",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
-    "mongoose": "^7.0.3",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
-    "helmet": "^6.0.1",
-    "express-rate-limit": "^6.7.0"
+    "mongoose": "^8.0.0",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "compression": "^1.7.4",
+    "moment": "^2.29.4",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.0.2"
   },
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=16.0.0"
   }
 }

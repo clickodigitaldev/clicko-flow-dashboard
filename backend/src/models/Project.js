@@ -54,7 +54,7 @@ const projectSchema = new mongoose.Schema({
   },
   monthOfPayment: {
     type: String,
-    required: false
+    required: true
   },
   // Salesmate integration fields
   salesmateDealId: {
@@ -72,21 +72,6 @@ const projectSchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true
-  },
-  category: {
-    type: String,
-    trim: true,
-    default: 'Web Development'
-  },
-  assignedTo: {
-    type: String,
-    trim: true
-  },
-  progress: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 100
   },
   tags: [{
     type: String,

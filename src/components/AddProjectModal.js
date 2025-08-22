@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Save, Calendar, DollarSign, User, FileText, Tag } from 'lucide-react';
-import { projectCategories, projectStatuses, projectPriorities } from '../data/demoData';
+import { projectCategories, projectStatuses, projectPriorities } from '../utils/constants';
 
 const AddProjectModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({

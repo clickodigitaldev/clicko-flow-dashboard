@@ -65,15 +65,15 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
       throw new Error('Please fill in all required fields (Client Name, Project Name, Total Amount, Expected Start Date, and Expected Completion)');
     }
 
-      // Update project via API
-      const updatedProject = await projectService.updateProject(project.id, {
-        ...formData,
-        totalAmount: parseFloat(formData.totalAmount),
-        depositPaid: parseFloat(formData.depositPaid) || 0,
-        expectedStartDate: new Date(formData.expectedStartDate).toISOString(),
-        expectedCompletion: new Date(formData.expectedCompletion).toISOString(),
-        depositDate: formData.depositDate ? new Date(formData.depositDate).toISOString() : null
-      });
+              // Update project via API
+        const updatedProject = await projectService.updateProject(project.id, {
+          ...formData,
+          totalAmount: parseFloat(formData.totalAmount),
+          depositPaid: parseFloat(formData.depositPaid) || 0,
+          expectedStartDate: new Date(formData.expectedStartDate).toISOString(),
+          expectedCompletion: new Date(formData.expectedCompletion).toISOString(),
+          depositDate: formData.depositDate ? new Date(formData.depositDate).toISOString() : null
+        });
       
       // Call parent callback
       onUpdate(updatedProject);

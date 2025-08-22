@@ -1,31 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import Sidebar from './Sidebar';
 import SummaryCards from './SummaryCards';
 import ProjectsTable from './ProjectsTable';
 import AlertsSection from './AlertsSection';
 import Charts from './Charts';
-import { demoProjects, extendedDemoProjects, monthlyTargets } from '../data/demoData';
 import { getFinancialSummary } from '../utils/forecastUtils';
+import projectService from '../services/projectService';
 
 const Dashboard = () => {
-  // Combine original demo projects with extended demo projects
-  const allProjects = [...demoProjects, ...extendedDemoProjects];
-  const [projects, setProjects] = useState(allProjects);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState('August 2025');
   const [activeFilter, setActiveFilter] = useState(null);
   const [settings] = useState({
-    monthlyTarget: monthlyTargets[currentMonth] || 150000,
+    monthlyTarget: 150000,
     breakEvenTarget: 80000,
     overheadExpenses: 50000,
     generalExpenses: 30000
   });
+
+  // Load projects from database
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        console.log('🔄 Loading projects from database...');
+        setLoading(true);
+        const projectsData = await projectService.getAllProjects();
+        console.log('📊 Projects loaded:', projectsData?.length || 0, 'projects');
+        setProjects(projectsData || []);
+      } catch (error) {
+        console.error('❌ Error loading projects:', error);
+        setProjects([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
 
   const handleUpdateProject = (projectId, updatedProject) => {
     setProjects(projects.map(p => p.id === projectId ? updatedProject : p));
   };
 
   const financialSummary = getFinancialSummary(projects, currentMonth, settings);
+
+  if (loading) {
+    return (
+      <div className="page-container gradient-bg">
+        <Sidebar />
+        <div className="main-content">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-white text-xl">Loading dashboard data...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container gradient-bg">
