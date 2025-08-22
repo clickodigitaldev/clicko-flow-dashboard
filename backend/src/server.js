@@ -57,127 +57,15 @@ console.log('🚀 Setting up simple working routes...');
 // Projects endpoint
 app.get('/api/projects', async (req, res) => {
   try {
-    // Return comprehensive demo projects for different months
-    const projects = [
-      // August 2025 Projects
-      {
-        _id: 'demo-proj-1',
-        projectId: 'PROJ001',
-        clientName: 'TechCorp Inc',
-        projectName: 'E-commerce Platform',
-        totalAmount: 50000,
-        depositPaid: 15000,
-        depositDate: '2025-08-01',
-        expectedStartDate: '2025-08-01',
-        expectedCompletion: '2025-09-30',
-        status: 'In Progress',
-        monthOfPayment: 'August 2025',
-        priority: 'High',
-        description: 'Modern e-commerce platform with payment integration',
-        category: 'Web Development',
-        assignedTo: 'John Developer',
-        progress: 65
-      },
-      {
-        _id: 'demo-proj-2',
-        projectId: 'PROJ002',
-        clientName: 'Digital Solutions',
-        projectName: 'Mobile App Development',
-        totalAmount: 35000,
-        depositPaid: 10000,
-        depositDate: '2025-08-05',
-        expectedStartDate: '2025-08-05',
-        expectedCompletion: '2025-10-15',
-        status: 'Planning',
-        monthOfPayment: 'August 2025',
-        priority: 'Medium',
-        description: 'Cross-platform mobile application',
-        category: 'Mobile Development',
-        assignedTo: 'Sarah Mobile',
-        progress: 25
-      },
-      // September 2025 Projects
-      {
-        _id: 'demo-proj-3',
-        projectId: 'PROJ003',
-        clientName: 'StartupXYZ',
-        projectName: 'CRM System',
-        totalAmount: 75000,
-        depositPaid: 25000,
-        depositDate: '2025-09-01',
-        expectedStartDate: '2025-09-01',
-        expectedCompletion: '2025-12-31',
-        status: 'Planning',
-        monthOfPayment: 'September 2025',
-        priority: 'High',
-        description: 'Custom CRM system for sales team',
-        category: 'Software Development',
-        assignedTo: 'Mike Developer',
-        progress: 15
-      },
-      // October 2025 Projects
-      {
-        _id: 'demo-proj-4',
-        projectId: 'PROJ004',
-        clientName: 'EduTech Ltd',
-        projectName: 'Learning Management System',
-        totalAmount: 120000,
-        depositPaid: 40000,
-        depositDate: '2025-10-01',
-        expectedStartDate: '2025-10-01',
-        expectedCompletion: '2026-03-31',
-        status: 'Planning',
-        monthOfPayment: 'October 2025',
-        priority: 'High',
-        description: 'Comprehensive LMS for online education',
-        category: 'Web Development',
-        assignedTo: 'Team Alpha',
-        progress: 10
-      },
-      // November 2025 Projects
-      {
-        _id: 'demo-proj-5',
-        projectId: 'PROJ005',
-        clientName: 'HealthTech',
-        projectName: 'Patient Portal',
-        totalAmount: 85000,
-        depositPaid: 30000,
-        depositDate: '2025-11-01',
-        expectedStartDate: '2025-11-01',
-        expectedCompletion: '2026-02-28',
-        status: 'Planning',
-        monthOfPayment: 'November 2025',
-        priority: 'Medium',
-        description: 'Secure patient management portal',
-        category: 'Healthcare Software',
-        assignedTo: 'Team Beta',
-        progress: 5
-      },
-      // December 2025 Projects
-      {
-        _id: 'demo-proj-6',
-        projectId: 'PROJ006',
-        clientName: 'Retail Solutions',
-        projectName: 'Inventory Management',
-        totalAmount: 65000,
-        depositPaid: 20000,
-        depositDate: '2025-12-01',
-        expectedStartDate: '2025-12-01',
-        expectedCompletion: '2026-04-30',
-        status: 'Planning',
-        monthOfPayment: 'December 2025',
-        priority: 'Medium',
-        description: 'Retail inventory tracking system',
-        category: 'Business Software',
-        assignedTo: 'Team Gamma',
-        progress: 0
-      }
-    ];
+    // Query the actual database for projects
+    const Project = require('./models/Project');
+    const projects = await Project.find({}).sort({ monthOfPayment: 1, expectedStartDate: 1 });
     
+    console.log(`📊 Database query returned ${projects.length} projects`);
     res.json(projects);
   } catch (error) {
-    console.error('Projects error:', error);
-    res.status(500).json({ error: 'Failed to get projects' });
+    console.error('Projects database error:', error);
+    res.status(500).json({ error: 'Failed to get projects from database' });
   }
 });
 
