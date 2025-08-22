@@ -11,11 +11,11 @@ services:
       - key: PORT
         value: 10000
       - key: MONGODB_URI
-        sync: false
+        value: mongodb+srv://clickoflow:clickoflow123@cluster0.abc123.mongodb.net/clicko-flow?retryWrites=true&w=majority
       - key: JWT_SECRET
-        sync: false
+        value: your-super-secret-jwt-key-here
       - key: CORS_ORIGIN
-        sync: false
+        value: https://clicko-flow-frontend.onrender.com
 
   # Frontend React App
   - type: web

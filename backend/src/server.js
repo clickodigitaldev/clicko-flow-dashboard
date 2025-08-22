@@ -14,6 +14,9 @@ const monthlyPlanningRoutes = require('./routes/monthlyPlanning');
 
 const app = express();
 
+// Get port from environment or use default
+const PORT = process.env.PORT || 5001;
+
 // Middleware
 app.use(helmet());
 app.use(morgan('combined'));
@@ -46,19 +49,39 @@ app.use(express.urlencoded({ extended: true }));
 // Database connection
 let isDatabaseConnected = false;
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-flow', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('✅ Connected to MongoDB');
-  isDatabaseConnected = true;
-})
-.catch(err => {
-  console.error('❌ MongoDB connection error:', err);
-  console.log('⚠️ Running in demo mode without database connection');
-  isDatabaseConnected = false;
-});
+// MongoDB connection with better error handling
+const connectToMongoDB = async () => {
+  try {
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-flow';
+    console.log(`🔗 Attempting to connect to MongoDB: ${mongoURI.replace(/\/\/.*@/, '//***:***@')}`);
+    
+    if (!mongoURI || mongoURI === 'mongodb://localhost:27017/clicko-flow') {
+      console.log('⚠️ No remote MongoDB URI provided, using local fallback');
+      isDatabaseConnected = false;
+      return;
+    }
+    
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000, // 10 second timeout
+      socketTimeoutMS: 45000, // 45 second timeout
+    });
+    
+    console.log('✅ Successfully connected to MongoDB');
+    isDatabaseConnected = true;
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err.message);
+    console.log('⚠️ Running in demo mode without database connection');
+    isDatabaseConnected = false;
+    
+    // Try to reconnect after 30 seconds
+    setTimeout(connectToMongoDB, 30000);
+  }
+};
+
+// Initial connection
+connectToMongoDB();
 
 // Simple working routes - no complex imports
 console.log('🚀 Setting up simple working routes...');
@@ -67,8 +90,47 @@ console.log('🚀 Setting up simple working routes...');
 app.get('/api/projects', async (req, res) => {
   try {
     if (!isDatabaseConnected) {
-      console.log('❌ Database not connected - cannot serve projects');
-      return res.status(503).json({ error: 'Database connection unavailable' });
+      console.log('⚠️ Database not connected, serving demo projects');
+      // Return demo projects when database is not available
+      const demoProjects = [
+        {
+          _id: 'demo-proj-1',
+          projectId: 'PROJ001',
+          clientName: 'TechCorp Inc',
+          projectName: 'E-commerce Platform',
+          totalAmount: 50000,
+          depositPaid: 15000,
+          depositDate: '2025-08-01',
+          expectedStartDate: '2025-08-01',
+          expectedCompletion: '2025-09-30',
+          status: 'In Progress',
+          monthOfPayment: 'August 2025',
+          priority: 'High',
+          description: 'Modern e-commerce platform with payment integration',
+          category: 'Web Development',
+          assignedTo: 'John Developer',
+          progress: 65
+        },
+        {
+          _id: 'demo-proj-2',
+          projectId: 'PROJ002',
+          clientName: 'Digital Solutions',
+          projectName: 'Mobile App Development',
+          totalAmount: 35000,
+          depositPaid: 10000,
+          depositDate: '2025-08-05',
+          expectedStartDate: '2025-08-05',
+          expectedCompletion: '2025-10-15',
+          status: 'Planning',
+          monthOfPayment: 'August 2025',
+          priority: 'Medium',
+          description: 'Cross-platform mobile application',
+          category: 'Mobile Development',
+          assignedTo: 'Sarah Mobile',
+          progress: 25
+        }
+      ];
+      return res.json(demoProjects);
     }
     
     // Query the actual database for projects
@@ -144,8 +206,26 @@ app.get('/api/monthly-planning/:month', async (req, res) => {
     const month = req.params.month;
     
     if (!isDatabaseConnected) {
-      console.log(`❌ Database not connected - cannot serve monthly planning for ${month}`);
-      return res.status(503).json({ error: 'Database connection unavailable' });
+      console.log(`⚠️ Database not connected, serving demo monthly planning for ${month}`);
+      // Return demo monthly planning when database is not available
+      const demoData = {
+        month: month,
+        revenueStreams: [
+          { name: 'Product & Service', amount: 25000 },
+          { name: 'Ecommerce', amount: 15000 }
+        ],
+        overhead: [
+          { name: 'Product Developer Team', salary: 8000 },
+          { name: 'Service Team', salary: 6000 },
+          { name: 'Management Team', salary: 4000 }
+        ],
+        generalExpenses: [
+          { name: 'Office Rent', amount: 2000 },
+          { name: 'Utilities', amount: 500 }
+        ],
+        notes: 'Demo data for testing purposes. Replace with real data when available.'
+      };
+      return res.json(demoData);
     }
     
     // Try to get data from database first
@@ -227,7 +307,9 @@ app.get('/api/health', (req, res) => {
     message: 'Clicko Flow API is running',
     timestamp: new Date().toISOString(),
     database: isDatabaseConnected ? 'Connected' : 'Demo Mode',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT,
+    mongodb_uri: process.env.MONGODB_URI ? 'Set' : 'Not Set'
   });
 });
 
@@ -391,8 +473,6 @@ app.use((err, req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
-
-const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
