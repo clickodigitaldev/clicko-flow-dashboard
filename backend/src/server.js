@@ -299,7 +299,9 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'Clicko Flow API is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    database: isDatabaseConnected ? 'Connected' : 'Demo Mode',
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
