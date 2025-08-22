@@ -17,12 +17,12 @@ services:
       - key: CORS_ORIGIN
         sync: false
 
-  # Frontend Static Site
+  # Frontend React App
   - type: web
     name: clicko-flow-frontend
-    env: static
+    env: node
     buildCommand: npm install && npm run build
-    staticPublishPath: ./build
+    startCommand: npx serve -s build -l 3000
     envVars:
       - key: REACT_APP_API_URL
         value: https://clicko-flow-api.onrender.com/api
