@@ -67,47 +67,8 @@ console.log('🚀 Setting up simple working routes...');
 app.get('/api/projects', async (req, res) => {
   try {
     if (!isDatabaseConnected) {
-      console.log('⚠️ Database not connected, returning demo projects');
-      // Return demo projects when database is not available
-      const demoProjects = [
-        {
-          _id: 'demo-proj-1',
-          projectId: 'PROJ001',
-          clientName: 'TechCorp Inc',
-          projectName: 'E-commerce Platform',
-          totalAmount: 50000,
-          depositPaid: 15000,
-          depositDate: '2025-08-01',
-          expectedStartDate: '2025-08-01',
-          expectedCompletion: '2025-09-30',
-          status: 'In Progress',
-          monthOfPayment: 'August 2025',
-          priority: 'High',
-          description: 'Modern e-commerce platform with payment integration',
-          category: 'Web Development',
-          assignedTo: 'John Developer',
-          progress: 65
-        },
-        {
-          _id: 'demo-proj-2',
-          projectId: 'PROJ002',
-          clientName: 'Digital Solutions',
-          projectName: 'Mobile App Development',
-          totalAmount: 35000,
-          depositPaid: 10000,
-          depositDate: '2025-08-05',
-          expectedStartDate: '2025-08-05',
-          expectedCompletion: '2025-10-15',
-          status: 'Planning',
-          monthOfPayment: 'August 2025',
-          priority: 'Medium',
-          description: 'Cross-platform mobile application',
-          category: 'Mobile Development',
-          assignedTo: 'Sarah Mobile',
-          progress: 25
-        }
-      ];
-      return res.json(demoProjects);
+      console.log('❌ Database not connected - cannot serve projects');
+      return res.status(503).json({ error: 'Database connection unavailable' });
     }
     
     // Query the actual database for projects
@@ -183,26 +144,8 @@ app.get('/api/monthly-planning/:month', async (req, res) => {
     const month = req.params.month;
     
     if (!isDatabaseConnected) {
-      console.log(`⚠️ Database not connected, returning demo monthly planning for ${month}`);
-      // Return demo monthly planning when database is not available
-      const demoData = {
-        month: month,
-        revenueStreams: [
-          { name: 'Product & Service', amount: 25000 },
-          { name: 'Ecommerce', amount: 15000 }
-        ],
-        overhead: [
-          { name: 'Product Developer Team', salary: 8000 },
-          { name: 'Service Team', salary: 6000 },
-          { name: 'Management Team', salary: 4000 }
-        ],
-        generalExpenses: [
-          { name: 'Office Rent', amount: 2000 },
-          { name: 'Utilities', amount: 500 }
-        ],
-        notes: 'Demo data for testing purposes. Replace with real data when available.'
-      };
-      return res.json(demoData);
+      console.log(`❌ Database not connected - cannot serve monthly planning for ${month}`);
+      return res.status(503).json({ error: 'Database connection unavailable' });
     }
     
     // Try to get data from database first
@@ -213,25 +156,8 @@ app.get('/api/monthly-planning/:month', async (req, res) => {
       console.log(`✅ Found monthly planning data for ${month}`);
       res.json(monthData);
     } else {
-      console.log(`⚠️ No monthly planning data found for ${month}, returning demo data`);
-      // Generate realistic demo data based on month
-      const demoData = {
-        month: month,
-        revenueStreams: [
-          { name: 'Product & Service', amount: 25000 },
-          { name: 'Ecommerce', amount: 15000 }
-        ],
-        overhead: [
-          { name: 'Product Developer Team', salary: 8000 },
-          { name: 'Service Team', amount: 6000 },
-          { name: 'Management Team', amount: 4000 }
-        ],
-        generalExpenses: [
-          { name: 'Office Rent', amount: 2000 },
-          { name: 'Utilities', amount: 500 }
-        ]
-      };
-      res.json(demoData);
+      console.log(`❌ No monthly planning data found for ${month}`);
+      res.status(404).json({ error: `No monthly planning data found for ${month}` });
     }
   } catch (error) {
     console.error('Monthly planning database error:', error);

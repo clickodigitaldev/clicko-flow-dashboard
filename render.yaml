@@ -18,10 +18,11 @@ services:
         sync: false
 
   # Frontend React App
-  - type: static
+  - type: web
     name: clicko-flow-frontend
+    env: node
     buildCommand: npm install && npm run build
-    staticPublishPath: ./build
+    startCommand: npx serve -s build -l 3000
     envVars:
       - key: REACT_APP_API_URL
         value: https://clicko-flow-api.onrender.com/api
