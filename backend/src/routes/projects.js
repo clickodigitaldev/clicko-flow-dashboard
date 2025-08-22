@@ -14,7 +14,16 @@ router.get('/', async (req, res) => {
   try {
     const { status, priority, search, sortBy = 'expectedCompletion', sortOrder = 'asc' } = req.query;
 
-    let query = { userId: req.user._id };
+    let query = {};
+    
+    // Handle demo user differently
+    if (req.user._id === 'demo-user-123') {
+      // Demo user - get all projects (no userId filter)
+      console.log('🔐 Demo user detected, returning all projects');
+    } else {
+      // Real user - filter by userId
+      query.userId = req.user._id;
+    }
 
     // Apply filters
     if (status && status !== 'All') {
@@ -38,6 +47,7 @@ router.get('/', async (req, res) => {
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
     const projects = await Project.find(query).sort(sort);
+    console.log(`📊 Found ${projects.length} projects for user ${req.user._id}`);
 
     res.json(projects);
   } catch (error) {
