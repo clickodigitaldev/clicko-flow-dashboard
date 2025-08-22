@@ -57,8 +57,9 @@ console.log('🚀 Setting up simple working routes...');
 // Projects endpoint
 app.get('/api/projects', async (req, res) => {
   try {
-    // Return demo projects for now
+    // Return comprehensive demo projects for different months
     const projects = [
+      // August 2025 Projects
       {
         _id: 'demo-proj-1',
         projectId: 'PROJ001',
@@ -94,6 +95,82 @@ app.get('/api/projects', async (req, res) => {
         category: 'Mobile Development',
         assignedTo: 'Sarah Mobile',
         progress: 25
+      },
+      // September 2025 Projects
+      {
+        _id: 'demo-proj-3',
+        projectId: 'PROJ003',
+        clientName: 'StartupXYZ',
+        projectName: 'CRM System',
+        totalAmount: 75000,
+        depositPaid: 25000,
+        depositDate: '2025-09-01',
+        expectedStartDate: '2025-09-01',
+        expectedCompletion: '2025-12-31',
+        status: 'Planning',
+        monthOfPayment: 'September 2025',
+        priority: 'High',
+        description: 'Custom CRM system for sales team',
+        category: 'Software Development',
+        assignedTo: 'Mike Developer',
+        progress: 15
+      },
+      // October 2025 Projects
+      {
+        _id: 'demo-proj-4',
+        projectId: 'PROJ004',
+        clientName: 'EduTech Ltd',
+        projectName: 'Learning Management System',
+        totalAmount: 120000,
+        depositPaid: 40000,
+        depositDate: '2025-10-01',
+        expectedStartDate: '2025-10-01',
+        expectedCompletion: '2026-03-31',
+        status: 'Planning',
+        monthOfPayment: 'October 2025',
+        priority: 'High',
+        description: 'Comprehensive LMS for online education',
+        category: 'Web Development',
+        assignedTo: 'Team Alpha',
+        progress: 10
+      },
+      // November 2025 Projects
+      {
+        _id: 'demo-proj-5',
+        projectId: 'PROJ005',
+        clientName: 'HealthTech',
+        projectName: 'Patient Portal',
+        totalAmount: 85000,
+        depositPaid: 30000,
+        depositDate: '2025-11-01',
+        expectedStartDate: '2025-11-01',
+        expectedCompletion: '2026-02-28',
+        status: 'Planning',
+        monthOfPayment: 'November 2025',
+        priority: 'Medium',
+        description: 'Secure patient management portal',
+        category: 'Healthcare Software',
+        assignedTo: 'Team Beta',
+        progress: 5
+      },
+      // December 2025 Projects
+      {
+        _id: 'demo-proj-6',
+        projectId: 'PROJ006',
+        clientName: 'Retail Solutions',
+        projectName: 'Inventory Management',
+        totalAmount: 65000,
+        depositPaid: 20000,
+        depositDate: '2025-12-01',
+        expectedStartDate: '2025-12-01',
+        expectedCompletion: '2026-04-30',
+        status: 'Planning',
+        monthOfPayment: 'December 2025',
+        priority: 'Medium',
+        description: 'Retail inventory tracking system',
+        category: 'Business Software',
+        assignedTo: 'Team Gamma',
+        progress: 0
       }
     ];
     
@@ -109,23 +186,92 @@ app.get('/api/monthly-planning/:month', async (req, res) => {
   try {
     const month = req.params.month;
     
-    // Return demo monthly planning data
+    // Generate realistic demo data based on month
+    const monthData = {
+      'August 2025': {
+        revenueStreams: [
+          { name: 'Product & Service', amount: 25000 },
+          { name: 'Ecommerce', amount: 15000 }
+        ],
+        overheadExpenses: [
+          { name: 'Product Developer Team', amount: 8000 },
+          { name: 'Service Team', amount: 6000 },
+          { name: 'Management Team', amount: 4000 }
+        ],
+        generalExpenses: [
+          { name: 'Office Rent', amount: 2000 },
+          { name: 'Utilities', amount: 500 }
+        ]
+      },
+      'September 2025': {
+        revenueStreams: [
+          { name: 'Product & Service', amount: 30000 },
+          { name: 'Ecommerce', amount: 20000 }
+        ],
+        overheadExpenses: [
+          { name: 'Product Developer Team', amount: 8500 },
+          { name: 'Service Team', amount: 6500 },
+          { name: 'Management Team', amount: 4500 }
+        ],
+        generalExpenses: [
+          { name: 'Office Rent', amount: 2000 },
+          { name: 'Utilities', amount: 600 }
+        ]
+      },
+      'October 2025': {
+        revenueStreams: [
+          { name: 'Product & Service', amount: 35000 },
+          { name: 'Ecommerce', amount: 25000 }
+        ],
+        overheadExpenses: [
+          { name: 'Product Developer Team', amount: 9000 },
+          { name: 'Service Team', amount: 7000 },
+          { name: 'Management Team', amount: 5000 }
+        ],
+        generalExpenses: [
+          { name: 'Office Rent', amount: 2000 },
+          { name: 'Utilities', amount: 700 }
+        ]
+      },
+      'November 2025': {
+        revenueStreams: [
+          { name: 'Product & Service', amount: 40000 },
+          { name: 'Ecommerce', amount: 30000 }
+        ],
+        overheadExpenses: [
+          { name: 'Product Developer Team', amount: 9500 },
+          { name: 'Service Team', amount: 7500 },
+          { name: 'Management Team', amount: 5500 }
+        ],
+        generalExpenses: [
+          { name: 'Office Rent', amount: 2000 },
+          { name: 'Utilities', amount: 800 }
+        ]
+      },
+      'December 2025': {
+        revenueStreams: [
+          { name: 'Product & Service', amount: 45000 },
+          { name: 'Ecommerce', amount: 35000 }
+        ],
+        overheadExpenses: [
+          { name: 'Product Developer Team', amount: 10000 },
+          { name: 'Service Team', amount: 8000 },
+          { name: 'Management Team', amount: 6000 }
+        ],
+        generalExpenses: [
+          { name: 'Office Rent', amount: 2000 },
+          { name: 'Utilities', amount: 900 }
+        ]
+      }
+    };
+    
+    // Get data for the specific month or use default
+    const monthInfo = monthData[month] || monthData['August 2025'];
+    
     const data = {
       month: month,
-      revenueStreams: [
-        { name: 'Product & Service', amount: 25000 },
-        { name: 'Ecommerce', amount: 15000 }
-      ],
-      overheadExpenses: [
-        { name: 'Product Developer Team', amount: 8000 },
-        { name: 'Service Team', amount: 6000 },
-        { name: 'Management Team', amount: 4000 }
-      ],
-      generalExpenses: [
-        { name: 'Office Rent', amount: 2000 },
-        { name: 'Utilities', amount: 500 }
-      ],
-      notes: 'Demo data for testing purposes. Replace with real data when available.'
+      ...monthInfo,
+      notes: `Demo data for ${month}. Replace with real data when available.`
     };
     
     res.json(data);
