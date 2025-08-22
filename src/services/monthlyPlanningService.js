@@ -108,7 +108,7 @@ class MonthlyPlanningService {
       }
 
       const data = await response.json();
-      return data.data;
+      return data; // Backend returns data directly, not wrapped in data.data
     } catch (error) {
       console.error('Error fetching monthly planning by month:', error);
       
@@ -145,7 +145,7 @@ class MonthlyPlanningService {
       }
 
       const data = await response.json();
-      return data.data;
+      return data; // Backend returns data directly
     } catch (error) {
       console.error('Error saving monthly planning:', error);
       throw error;
@@ -166,7 +166,7 @@ class MonthlyPlanningService {
       }
 
       const data = await response.json();
-      return data.data;
+      return data; // Backend returns data directly
     } catch (error) {
       console.error('Error updating monthly planning:', error);
       throw error;
