@@ -4,15 +4,12 @@
   "description": "Project Dashboard for Clicko Digital",
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "cd backend && npm start",
     "dev": "concurrently \"npm run start\" \"cd backend && npm run dev\"",
     "install-all": "npm install && cd backend && npm install",
-    "build-all": "npm run build && cd backend && npm run build",
-    "deploy": "npm run build && cd backend && npm run build",
-    "start:prod": "node backend/src/server.js"
+    "build-all": "cd backend && npm run build",
+    "deploy": "cd backend && npm run build",
+    "start:prod": "cd backend && npm start"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
