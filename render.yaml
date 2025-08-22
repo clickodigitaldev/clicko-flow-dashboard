@@ -18,14 +18,15 @@ services:
         value: https://clicko-flow-frontend.onrender.com
 
   # Frontend React App
-  - type: static
+  - type: web
     name: clicko-flow-frontend
+    env: node
     buildCommand: npm install && npm run build
-    staticPublishPath: ./build
+    startCommand: node serve-static.js
     envVars:
       - key: REACT_APP_API_URL
         value: https://clicko-flow-api.onrender.com/api
       - key: REACT_APP_ENVIRONMENT
         value: production
       - key: FORCE_REDEPLOY
-        value: "2025-08-22-20-40"
+        value: "2025-08-22-20-45"
