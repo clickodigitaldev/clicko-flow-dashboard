@@ -61,6 +61,10 @@ app.get('/api/test-route', (req, res) => {
 
 // Try to register auth routes
 try {
+  console.log('🔍 Attempting to load auth routes...');
+  console.log('🔍 authRoutes type:', typeof authRoutes);
+  console.log('🔍 authRoutes content:', authRoutes);
+  
   app.use('/api/auth', authRoutes);
   console.log('✅ Auth routes registered successfully');
 } catch (error) {
