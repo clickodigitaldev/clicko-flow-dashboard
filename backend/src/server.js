@@ -107,6 +107,86 @@ app.get('/api/demo/token', (req, res) => {
   }
 });
 
+// Demo data endpoints (no authentication required)
+app.get('/api/demo/projects', (req, res) => {
+  try {
+    // Return demo projects data
+    const demoProjects = [
+      {
+        _id: 'demo-proj-1',
+        projectId: 'PROJ001',
+        clientName: 'TechCorp Inc',
+        projectName: 'E-commerce Platform',
+        totalAmount: 50000,
+        depositPaid: 15000,
+        depositDate: '2025-08-01',
+        expectedStartDate: '2025-08-01',
+        expectedCompletion: '2025-09-30',
+        status: 'In Progress',
+        monthOfPayment: 'August 2025',
+        priority: 'High',
+        description: 'Modern e-commerce platform with payment integration',
+        category: 'Web Development',
+        assignedTo: 'John Developer',
+        progress: 65
+      },
+      {
+        _id: 'demo-proj-2',
+        projectId: 'PROJ002',
+        clientName: 'Digital Solutions',
+        projectName: 'Mobile App Development',
+        totalAmount: 35000,
+        depositPaid: 10000,
+        depositDate: '2025-08-05',
+        expectedStartDate: '2025-08-05',
+        expectedCompletion: '2025-10-15',
+        status: 'Planning',
+        monthOfPayment: 'August 2025',
+        priority: 'Medium',
+        description: 'Cross-platform mobile application',
+        category: 'Mobile Development',
+        assignedTo: 'Sarah Mobile',
+        progress: 25
+      }
+    ];
+    
+    res.json(demoProjects);
+  } catch (error) {
+    console.error('Demo projects error:', error);
+    res.status(500).json({ error: 'Failed to get demo projects' });
+  }
+});
+
+app.get('/api/demo/monthly-planning/:month', (req, res) => {
+  try {
+    const month = req.params.month;
+    
+    // Return demo monthly planning data
+    const demoData = {
+      month: month,
+      revenueStreams: [
+        { name: 'Product & Service', amount: 25000 },
+        { name: 'Ecommerce', amount: 15000 }
+      ],
+      overheadExpenses: [
+        { name: 'Product Developer Team', amount: 8000 },
+        { name: 'Service Team', amount: 6000 },
+        { name: 'Management Team', amount: 4000 }
+      ],
+      generalExpenses: [
+        { name: 'Office Rent', amount: 2000 },
+        { name: 'Utilities', amount: 500 }
+      ],
+      notes: 'Demo data for testing purposes. Replace with real data when available.'
+    };
+    
+    res.json({ data: demoData });
+  } catch (error) {
+    console.error('Demo monthly planning error:', error);
+    res.status(500).json({ error: 'Failed to get demo monthly planning' });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

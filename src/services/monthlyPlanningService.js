@@ -111,6 +111,20 @@ class MonthlyPlanningService {
       return data.data;
     } catch (error) {
       console.error('Error fetching monthly planning by month:', error);
+      
+      // Fallback to demo data if main API fails
+      console.log('🔄 Falling back to demo data for month:', month);
+      try {
+        const demoResponse = await fetch(`${this.baseURL.replace('/monthly-planning', '')}/demo/monthly-planning/${encodeURIComponent(month)}`);
+        if (demoResponse.ok) {
+          const demoData = await demoResponse.json();
+          console.log('📊 Demo monthly planning loaded for', month);
+          return demoData.data;
+        }
+      } catch (demoError) {
+        console.error('Demo data fallback also failed:', demoError);
+      }
+      
       throw error;
     }
   }

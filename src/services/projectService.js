@@ -85,6 +85,20 @@ class ProjectService {
       return data || [];
     } catch (error) {
       console.error('Error fetching projects:', error);
+      
+      // Fallback to demo data if main API fails
+      console.log('🔄 Falling back to demo data...');
+      try {
+        const demoResponse = await fetch(`${this.baseURL}/demo/projects`);
+        if (demoResponse.ok) {
+          const demoData = await demoResponse.json();
+          console.log('📊 Demo projects loaded:', demoData?.length || 0);
+          return demoData || [];
+        }
+      } catch (demoError) {
+        console.error('Demo data fallback also failed:', demoError);
+      }
+      
       throw error;
     }
   }
