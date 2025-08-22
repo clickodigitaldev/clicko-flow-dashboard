@@ -99,20 +99,20 @@ const ProjectsPage = () => {
   const handleAddProject = async (newProject) => {
     try {
       const projectData = {
-        ...newProject,
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0],
-        progress: 0,
-        milestones: []
-      };
+      ...newProject,
+      createdAt: new Date().toISOString().split('T')[0],
+      updatedAt: new Date().toISOString().split('T')[0],
+      progress: 0,
+      milestones: []
+    };
 
       // Save to database
       const savedProject = await projectService.createProject(projectData);
       
       // Add to local state
       setProjects([...projects, savedProject]);
-      setShowAddModal(false);
-      showNotification('Project added successfully!');
+    setShowAddModal(false);
+    showNotification('Project added successfully!');
     } catch (error) {
       console.error('Error adding project:', error);
       showNotification('Failed to add project: ' + error.message, 'error');
@@ -125,8 +125,8 @@ const ProjectsPage = () => {
     try {
       if (updatedProject === null) {
         // Project was deleted
-        setProjects(projects.filter(p => p.id !== projectId));
-        showNotification('Project deleted successfully!');
+      setProjects(projects.filter(p => p.id !== projectId));
+      showNotification('Project deleted successfully!');
       } else {
         // Project was updated
         const updatedProjectFromDB = await projectService.updateProject(projectId, updatedProject);
@@ -299,7 +299,7 @@ const ProjectsPage = () => {
             <div className="glass-card p-6 text-center">
               <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-white">Loading projects...</p>
-            </div>
+                        </div>
           ) : error ? (
             <div className="glass-card p-6 text-center">
               <p className="text-red-400 text-lg font-semibold">Error: {error}</p>

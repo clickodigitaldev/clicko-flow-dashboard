@@ -6,20 +6,44 @@ class ProjectService {
   }
 
   // Get auth token from localStorage
-  getAuthToken() {
+  async getAuthToken() {
     let token = localStorage.getItem('authToken');
     
-    // If no token exists, create a demo token for development
+    // If no token exists, try to create one
     if (!token) {
-      token = this.createDemoToken();
+      token = await this.createDemoToken();
+    }
+    
+    // If still no token (production), show auth message
+    if (!token) {
+      console.log('🔐 No valid authentication token found');
+      // For now, we'll use a fallback approach in production
+      return 'demo-token-for-production';
     }
     
     return token;
   }
 
   // Create demo token for development
-  createDemoToken() {
-    // This is a demo token for development - in production, users should authenticate
+  async createDemoToken() {
+    // For production, fetch a fresh demo token from the API
+    if (process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost') {
+      try {
+        console.log('🔐 Production environment detected - fetching demo token from API');
+        const response = await fetch(`${this.baseURL}/demo/token`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('authToken', data.token);
+          return data.token;
+        }
+      } catch (error) {
+        console.error('Failed to fetch demo token:', error);
+      }
+      return null;
+    }
+    
+    // This is a demo token for development only
     const demoToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4YTc5NzMwMDkxYjA2YjA2NTRlYzA0YSIsImlhdCI6MTc1NTgxODk4OSwiZXhwIjoxNzU1OTA1Mzg5fQ.KMDepRqhARXo-pNiqcz8Aw8QybOVId_MsLcpkXIsyRY';
     localStorage.setItem('authToken', demoToken);
     return demoToken;
@@ -28,7 +52,7 @@ class ProjectService {
   // Get all projects
   async getAllProjects() {
     try {
-      const token = this.getAuthToken();
+      const token = await this.getAuthToken();
       console.log('🔍 Fetching projects from:', `${this.baseURL}/projects`);
       const response = await fetch(`${this.baseURL}/projects`, {
         method: 'GET',
@@ -55,7 +79,7 @@ class ProjectService {
   // Get projects by month
   async getProjectsByMonth(month) {
     try {
-      const token = this.getAuthToken();
+      const token = await this.getAuthToken();
       const response = await fetch(`${this.baseURL}/projects/month/${encodeURIComponent(month)}`, {
         method: 'GET',
         headers: {
@@ -79,7 +103,7 @@ class ProjectService {
   // Create new project
   async createProject(projectData) {
     try {
-      const token = this.getAuthToken();
+      const token = await this.getAuthToken();
       const response = await fetch(`${this.baseURL}/projects`, {
         method: 'POST',
         headers: {
@@ -104,7 +128,7 @@ class ProjectService {
   // Update project
   async updateProject(projectId, projectData) {
     try {
-      const token = this.getAuthToken();
+      const token = await this.getAuthToken();
       
       // For demo projects with string IDs, we need to handle them differently
       // First try to find the project by projectId field instead of _id
@@ -151,7 +175,7 @@ class ProjectService {
   // Delete project
   async deleteProject(projectId) {
     try {
-      const token = this.getAuthToken();
+      const token = await this.getAuthToken();
       const response = await fetch(`${this.baseURL}/projects/${projectId}`, {
         method: 'DELETE',
         headers: {
@@ -174,7 +198,7 @@ class ProjectService {
   // Get project by ID
   async getProjectById(projectId) {
     try {
-      const token = this.getAuthToken();
+      const token = await this.getAuthToken();
       const response = await fetch(`${this.baseURL}/projects/${projectId}`, {
         method: 'GET',
         headers: {

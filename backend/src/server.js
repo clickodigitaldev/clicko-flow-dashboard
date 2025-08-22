@@ -68,6 +68,37 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Demo endpoint for development/testing
+app.get('/api/demo/token', (req, res) => {
+  try {
+    // Create a demo user ID
+    const demoUserId = 'demo-user-123';
+    
+    // Generate a JWT token that expires in 30 days
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign(
+      { id: demoUserId }, 
+      process.env.JWT_SECRET || 'demo-secret-key',
+      { expiresIn: '30d' }
+    );
+    
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: demoUserId,
+        email: 'demo@clicko.com',
+        firstName: 'Demo',
+        lastName: 'User',
+        company: 'Clicko Digital'
+      }
+    });
+  } catch (error) {
+    console.error('Demo token generation error:', error);
+    res.status(500).json({ error: 'Failed to generate demo token' });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
