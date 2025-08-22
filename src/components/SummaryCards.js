@@ -101,10 +101,10 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
   const targetAchievement = expectedRevenue > 0 ? Math.round((totalDeposits / expectedRevenue) * 100) : 0;
 
   // Calculate meaningful progress metrics
-  const completedProjects = allProjects.filter(p => p.status === 'Completed').length;
+  const completedProjects = currentMonthProjects.filter(p => p.status === 'Completed').length;
   const completionRate = totalProjects > 0 ? ((completedProjects / totalProjects) * 100).toFixed(1) : 0;
   
-  const totalProjectValue = allProjects.reduce((sum, p) => sum + p.totalAmount, 0);
+  const totalProjectValue = currentMonthProjects.reduce((sum, p) => sum + p.totalAmount, 0);
   const depositRate = totalProjectValue > 0 ? ((totalDeposits / totalProjectValue) * 100).toFixed(1) : 0;
 
   // Break-even Status = Deposits received vs Total Expenses
