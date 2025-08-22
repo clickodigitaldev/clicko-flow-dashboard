@@ -12,7 +12,23 @@ const protect = async (req, res, next) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Get user from token
+      // Check if this is a demo token
+      if (decoded.id === 'demo-user-123') {
+        // Demo token - create a mock user object
+        req.user = {
+          _id: 'demo-user-123',
+          email: 'demo@clicko.com',
+          firstName: 'Demo',
+          lastName: 'User',
+          company: 'Clicko Digital',
+          role: 'user',
+          isActive: true
+        };
+        console.log('🔐 Demo token authenticated successfully');
+        return next();
+      }
+
+      // Regular user token - get user from database
       req.user = await User.findById(decoded.id).select('-password');
 
       if (!req.user) {

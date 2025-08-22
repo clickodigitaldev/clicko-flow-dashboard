@@ -75,10 +75,18 @@ app.get('/api/demo/token', (req, res) => {
     const demoUserId = 'demo-user-123';
     
     // Generate a JWT token that expires in 30 days
+    // IMPORTANT: Use the same JWT_SECRET as the auth middleware
     const jwt = require('jsonwebtoken');
+    
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ 
+        error: 'JWT_SECRET not configured. Please set JWT_SECRET environment variable.' 
+      });
+    }
+    
     const token = jwt.sign(
       { id: demoUserId }, 
-      process.env.JWT_SECRET || 'demo-secret-key',
+      process.env.JWT_SECRET, // Use the exact same secret
       { expiresIn: '30d' }
     );
     
