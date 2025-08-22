@@ -125,7 +125,9 @@ class MonthlyPlanningService {
         console.error('Demo data fallback also failed:', demoError);
       }
       
-      throw error;
+      // Return null instead of throwing error
+      console.log('⚠️ Returning null due to API failure for month:', month);
+      return null;
     }
   }
 

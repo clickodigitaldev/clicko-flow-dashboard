@@ -99,7 +99,9 @@ class ProjectService {
         console.error('Demo data fallback also failed:', demoError);
       }
       
-      throw error;
+      // Return empty array instead of throwing error
+      console.log('⚠️ Returning empty array due to API failure');
+      return [];
     }
   }
 
