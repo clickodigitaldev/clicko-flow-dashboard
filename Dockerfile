@@ -1,5 +1,5 @@
-# Multi-stage build for production
-FROM node:18-alpine AS builder
+# Use Node.js 18 Alpine as base image
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
@@ -9,38 +9,14 @@ COPY package*.json ./
 COPY backend/package*.json ./backend/
 
 # Install dependencies
-RUN npm ci --only=production
-RUN cd backend && npm ci --only=production
+RUN npm install --production=false
+RUN cd backend && npm install --production=false
 
 # Copy source code
 COPY . .
 
 # Build frontend
 RUN npm run build
-
-# Production stage
-FROM node:18-alpine AS production
-
-# Create app directory
-WORKDIR /app
-
-# Copy built frontend
-COPY --from=builder /app/build ./public
-
-# Copy backend
-COPY --from=builder /app/backend ./backend
-COPY --from=builder /app/backend/node_modules ./backend/node_modules
-
-# Copy package files
-COPY --from=builder /app/backend/package*.json ./backend/
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-
-# Change ownership
-RUN chown -R nextjs:nodejs /app
-USER nextjs
 
 # Expose port
 EXPOSE 5001
