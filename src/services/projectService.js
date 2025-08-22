@@ -8,10 +8,13 @@ class ProjectService {
   // Get auth token from localStorage
   async getAuthToken() {
     let token = localStorage.getItem('authToken');
+    console.log('🔐 Current token from localStorage:', token ? 'Present' : 'None');
     
     // If no token exists, try to create one
     if (!token) {
+      console.log('🔐 No token found, creating demo token...');
       token = await this.createDemoToken();
+      console.log('🔐 Demo token created:', token ? 'Success' : 'Failed');
     }
     
     // If still no token (production), show auth message
@@ -21,6 +24,7 @@ class ProjectService {
       return 'demo-token-for-production';
     }
     
+    console.log('🔐 Returning token:', token.substring(0, 20) + '...');
     return token;
   }
 
@@ -30,15 +34,24 @@ class ProjectService {
     if (process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost') {
       try {
         console.log('🔐 Production environment detected - fetching demo token from API');
+        console.log('🔐 Demo token URL:', `${this.baseURL}/demo/token`);
+        
         const response = await fetch(`${this.baseURL}/demo/token`);
+        console.log('🔐 Demo token response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
+          console.log('🔐 Demo token data received:', data);
           localStorage.setItem('authToken', data.token);
+          console.log('🔐 Demo token stored in localStorage');
           return data.token;
+        } else {
+          console.error('🔐 Demo token response not ok:', response.status, response.statusText);
+          const errorText = await response.text();
+          console.error('🔐 Demo token error response:', errorText);
         }
       } catch (error) {
-        console.error('Failed to fetch demo token:', error);
+        console.error('🔐 Failed to fetch demo token:', error);
       }
       return null;
     }
