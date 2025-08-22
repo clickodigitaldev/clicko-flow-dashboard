@@ -51,9 +51,21 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-fl
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Routes - re-enabling one by one to find the issue
-app.use('/api/auth', authRoutes);
-console.log('✅ Auth routes enabled');
+// Routes - testing basic route registration
+console.log('🔧 Testing route registration...');
+
+// Test basic route first
+app.get('/api/test-route', (req, res) => {
+  res.json({ message: 'Basic route working' });
+});
+
+// Try to register auth routes
+try {
+  app.use('/api/auth', authRoutes);
+  console.log('✅ Auth routes registered successfully');
+} catch (error) {
+  console.error('❌ Error registering auth routes:', error);
+}
 
 // Temporarily keep these disabled until we find the issue
 // app.use('/api/projects', projectRoutes);
