@@ -54,7 +54,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-fl
 // Simple working routes - no complex imports
 console.log('🚀 Setting up simple working routes...');
 
-// Projects endpoint
+// Projects endpoints
 app.get('/api/projects', async (req, res) => {
   try {
     // Query the actual database for projects
@@ -69,14 +69,78 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-// Monthly planning endpoint
+// Create new project
+app.post('/api/projects', async (req, res) => {
+  try {
+    const Project = require('./models/Project');
+    const projectData = req.body;
+    
+    // Add creation timestamp and default values
+    projectData.createdAt = new Date();
+    projectData.updatedAt = new Date();
+    
+    // Ensure required fields have default values
+    if (!projectData.status) projectData.status = 'Planning';
+    if (!projectData.priority) projectData.priority = 'Medium';
+    if (!projectData.depositPaid) projectData.depositPaid = 0;
+    if (!projectData.projectId) projectData.projectId = `PROJ${Date.now()}`;
+    
+    const newProject = new Project(projectData);
+    const savedProject = await newProject.save();
+    
+    console.log('✅ New project created:', savedProject._id);
+    res.status(201).json(savedProject);
+  } catch (error) {
+    console.error('Create project error:', error);
+    res.status(500).json({ error: 'Failed to create project: ' + error.message });
+  }
+});
+
+// Update project
+app.put('/api/projects/:id', async (req, res) => {
+  try {
+    const Project = require('./models/Project');
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    // Add update timestamp
+    updateData.updatedAt = new Date();
+    
+    const updatedProject = await Project.findByIdAndUpdate(
+      id, 
+      updateData, 
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedProject) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    console.log('✅ Project updated:', id);
+    res.json(updatedProject);
+  } catch (error) {
+    console.error('Update project error:', error);
+    res.status(500).json({ error: 'Failed to update project' });
+  }
+});
+
+// Monthly planning endpoints
 app.get('/api/monthly-planning/:month', async (req, res) => {
   try {
     const month = req.params.month;
     
-    // Generate realistic demo data based on month
-    const monthData = {
-      'August 2025': {
+    // Try to get data from database first
+    const MonthlyPlanning = require('./models/MonthlyPlanning');
+    const monthData = await MonthlyPlanning.findOne({ month: month });
+    
+    if (monthData) {
+      console.log(`✅ Found monthly planning data for ${month}`);
+      res.json(monthData);
+    } else {
+      console.log(`⚠️ No monthly planning data found for ${month}, returning demo data`);
+      // Generate realistic demo data based on month
+      const demoData = {
+        month: month,
         revenueStreams: [
           { name: 'Product & Service', amount: 25000 },
           { name: 'Ecommerce', amount: 15000 }
@@ -90,107 +154,51 @@ app.get('/api/monthly-planning/:month', async (req, res) => {
           { name: 'Office Rent', amount: 2000 },
           { name: 'Utilities', amount: 500 }
         ]
-      },
-      'September 2025': {
-        revenueStreams: [
-          { name: 'Product & Service', amount: 30000 },
-          { name: 'Ecommerce', amount: 20000 }
-        ],
-        overheadExpenses: [
-          { name: 'Product Developer Team', amount: 8500 },
-          { name: 'Service Team', amount: 6500 },
-          { name: 'Management Team', amount: 4500 }
-        ],
-        generalExpenses: [
-          { name: 'Office Rent', amount: 2000 },
-          { name: 'Utilities', amount: 600 }
-        ]
-      },
-      'October 2025': {
-        revenueStreams: [
-          { name: 'Product & Service', amount: 35000 },
-          { name: 'Ecommerce', amount: 25000 }
-        ],
-        overheadExpenses: [
-          { name: 'Product Developer Team', amount: 9000 },
-          { name: 'Service Team', amount: 7000 },
-          { name: 'Management Team', amount: 5000 }
-        ],
-        generalExpenses: [
-          { name: 'Office Rent', amount: 2000 },
-          { name: 'Utilities', amount: 700 }
-        ]
-      },
-      'November 2025': {
-        revenueStreams: [
-          { name: 'Product & Service', amount: 40000 },
-          { name: 'Ecommerce', amount: 30000 }
-        ],
-        overheadExpenses: [
-          { name: 'Product Developer Team', amount: 9500 },
-          { name: 'Service Team', amount: 7500 },
-          { name: 'Management Team', amount: 5500 }
-        ],
-        generalExpenses: [
-          { name: 'Office Rent', amount: 2000 },
-          { name: 'Utilities', amount: 800 }
-        ]
-      },
-      'December 2025': {
-        revenueStreams: [
-          { name: 'Product & Service', amount: 45000 },
-          { name: 'Ecommerce', amount: 35000 }
-        ],
-        overheadExpenses: [
-          { name: 'Product Developer Team', amount: 10000 },
-          { name: 'Service Team', amount: 8000 },
-          { name: 'Management Team', amount: 6000 }
-        ],
-        generalExpenses: [
-          { name: 'Office Rent', amount: 2000 },
-          { name: 'Utilities', amount: 900 }
-        ]
-      }
-    };
-    
-    // Get data for the specific month or use default
-    const monthInfo = monthData[month] || monthData['August 2025'];
-    
-    const data = {
-      month: month,
-      ...monthInfo,
-      notes: `Demo data for ${month}. Replace with real data when available.`
-    };
-    
-    res.json(data);
+      };
+      res.json(demoData);
+    }
   } catch (error) {
-    console.error('Monthly planning error:', error);
-    res.status(500).json({ error: 'Failed to get monthly planning' });
+    console.error('Monthly planning database error:', error);
+    res.status(500).json({ error: 'Failed to get monthly planning data' });
+  }
+});
+
+// Save monthly planning data
+app.post('/api/monthly-planning', async (req, res) => {
+  try {
+    const MonthlyPlanning = require('./models/MonthlyPlanning');
+    const planningData = req.body;
+    
+    // Add timestamps
+    planningData.createdAt = new Date();
+    planningData.updatedAt = new Date();
+    
+    // Check if data for this month already exists
+    const existingData = await MonthlyPlanning.findOne({ month: planningData.month });
+    
+    if (existingData) {
+      // Update existing data
+      const updatedData = await MonthlyPlanning.findByIdAndUpdate(
+        existingData._id,
+        planningData,
+        { new: true, runValidators: true }
+      );
+      console.log(`✅ Monthly planning updated for ${planningData.month}`);
+      res.json(updatedData);
+    } else {
+      // Create new data
+      const newPlanning = new MonthlyPlanning(planningData);
+      const savedPlanning = await newPlanning.save();
+      console.log(`✅ New monthly planning created for ${planningData.month}`);
+      res.status(201).json(savedPlanning);
+    }
+  } catch (error) {
+    console.error('Save monthly planning error:', error);
+    res.status(500).json({ error: 'Failed to save monthly planning data' });
   }
 });
 
 console.log('✅ Simple routes setup complete');
-
-// Create project endpoint
-app.post('/api/projects', async (req, res) => {
-  try {
-    const projectData = req.body;
-    
-    // Generate a simple ID
-    const newProject = {
-      _id: `proj-${Date.now()}`,
-      projectId: projectData.projectId || `PROJ${Date.now()}`,
-      ...projectData,
-      createdAt: new Date().toISOString()
-    };
-    
-    console.log('✅ New project created:', newProject.projectName);
-    res.status(201).json(newProject);
-  } catch (error) {
-    console.error('Create project error:', error);
-    res.status(500).json({ error: 'Failed to create project' });
-  }
-});
 
 // Update project endpoint
 app.put('/api/projects/:id', async (req, res) => {

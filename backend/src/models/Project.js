@@ -4,11 +4,11 @@ const projectSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false  // Made optional for demo purposes
   },
   projectId: {
     type: String,
-    required: true,
+    required: false,  // Made optional for demo purposes
     unique: true
   },
   projectName: {
@@ -44,7 +44,7 @@ const projectSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'In Progress', 'Completed', 'On Hold', 'Cancelled'],
+    enum: ['Pending', 'Planning', 'In Progress', 'Completed', 'On Hold', 'Cancelled'],
     default: 'Pending'
   },
   priority: {

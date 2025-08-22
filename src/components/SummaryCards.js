@@ -71,11 +71,11 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
     );
   }
 
-  // Show all projects, not just current month
-  const allProjects = projects;
+  // Filter projects by current month
+  const currentMonthProjects = projects.filter(p => p.monthOfPayment === currentMonth);
   
   // Use database forecast data for calculations
-  const totalProjects = allProjects.length;
+  const totalProjects = currentMonthProjects.length;
   
   // Get forecast data for current month
   const forecastRevenueStreams = forecastData?.revenueStreams || [];
@@ -88,11 +88,11 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
   const totalGeneralExpenses = forecastGeneralExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
   const totalExpenses = totalOverhead + totalGeneralExpenses;
   
-  // Use project data for deposits (actual received money) - all projects
-  const totalDeposits = allProjects.reduce((sum, p) => sum + p.depositPaid, 0);
+  // Use project data for deposits (actual received money) - current month projects
+  const totalDeposits = currentMonthProjects.reduce((sum, p) => sum + p.depositPaid, 0);
   
-  // Expected Payments = remaining payments from projects (all projects)
-  const totalExpectedPayments = allProjects.reduce((sum, p) => sum + (p.totalAmount - p.depositPaid), 0);
+  // Expected Payments = remaining payments from projects (current month projects)
+  const totalExpectedPayments = currentMonthProjects.reduce((sum, p) => sum + (p.totalAmount - p.depositPaid), 0);
   
   // Use database target or fallback to default (commented out as not used in current calculation)
   // const monthlyTarget = settings?.monthlyTarget || 150000;
@@ -101,10 +101,10 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
   const targetAchievement = expectedRevenue > 0 ? Math.round((totalDeposits / expectedRevenue) * 100) : 0;
 
   // Calculate meaningful progress metrics
-  const completedProjects = currentMonthProjects.filter(p => p.status === 'Completed').length;
+  const completedProjects = allProjects.filter(p => p.status === 'Completed').length;
   const completionRate = totalProjects > 0 ? ((completedProjects / totalProjects) * 100).toFixed(1) : 0;
   
-  const totalProjectValue = currentMonthProjects.reduce((sum, p) => sum + p.totalAmount, 0);
+  const totalProjectValue = allProjects.reduce((sum, p) => sum + p.totalAmount, 0);
   const depositRate = totalProjectValue > 0 ? ((totalDeposits / totalProjectValue) * 100).toFixed(1) : 0;
 
   // Break-even Status = Deposits received vs Total Expenses
