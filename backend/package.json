@@ -35,5 +35,6 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "_comment": "Triggering redeploy on Render with axios dependency fix"
 }
