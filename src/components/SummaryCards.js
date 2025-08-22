@@ -71,27 +71,28 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
     );
   }
 
-  const currentMonthProjects = projects.filter(p => p.monthOfPayment === currentMonth);
+  // Show all projects, not just current month
+  const allProjects = projects;
   
   // Use database forecast data for calculations
-  const totalProjects = currentMonthProjects.length;
+  const totalProjects = allProjects.length;
   
   // Get forecast data for current month
   const forecastRevenueStreams = forecastData?.revenueStreams || [];
-  const forecastOverhead = forecastData?.overhead || [];
+  const forecastOverhead = forecastData?.overheadExpenses || []; // Fixed property name
   const forecastGeneralExpenses = forecastData?.generalExpenses || [];
   
   // Calculate totals from forecast data
   const expectedRevenue = forecastRevenueStreams.reduce((sum, stream) => sum + (stream.amount || 0), 0);
-  const totalOverhead = forecastOverhead.reduce((sum, pos) => sum + (pos.salary || 0), 0);
+  const totalOverhead = forecastOverhead.reduce((sum, pos) => sum + (pos.amount || 0), 0); // Fixed property name
   const totalGeneralExpenses = forecastGeneralExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
   const totalExpenses = totalOverhead + totalGeneralExpenses;
   
-  // Use project data for deposits (actual received money)
-  const totalDeposits = currentMonthProjects.reduce((sum, p) => sum + p.depositPaid, 0);
+  // Use project data for deposits (actual received money) - all projects
+  const totalDeposits = allProjects.reduce((sum, p) => sum + p.depositPaid, 0);
   
-  // Expected Payments = remaining payments from projects (Due in this month)
-  const totalExpectedPayments = currentMonthProjects.reduce((sum, p) => sum + (p.totalAmount - p.depositPaid), 0);
+  // Expected Payments = remaining payments from projects (all projects)
+  const totalExpectedPayments = allProjects.reduce((sum, p) => sum + (p.totalAmount - p.depositPaid), 0);
   
   // Use database target or fallback to default (commented out as not used in current calculation)
   // const monthlyTarget = settings?.monthlyTarget || 150000;
