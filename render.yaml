@@ -3,7 +3,6 @@ services:
   - type: web
     name: clicko-flow-api
     env: node
-    plan: starter
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     envVars:
@@ -22,7 +21,6 @@ services:
   - type: web
     name: clicko-flow-frontend
     env: static
-    plan: starter
     buildCommand: npm install && npm run build
     staticPublishPath: ./build
     envVars:
