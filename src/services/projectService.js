@@ -65,13 +65,11 @@ class ProjectService {
   // Get all projects
   async getAllProjects() {
     try {
-      const token = await this.getAuthToken();
       console.log('🔍 Fetching projects from:', `${this.baseURL}/projects`);
       const response = await fetch(`${this.baseURL}/projects`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         }
       });
 

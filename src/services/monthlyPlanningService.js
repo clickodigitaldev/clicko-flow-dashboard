@@ -97,7 +97,9 @@ class MonthlyPlanningService {
     try {
       const response = await fetch(`${this.baseURL}/${encodeURIComponent(month)}`, {
         method: 'GET',
-        headers: await this.getAuthHeaders()
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (!response.ok) {
