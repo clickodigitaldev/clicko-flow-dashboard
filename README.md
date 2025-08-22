@@ -1,180 +1,264 @@
-# Clicko Flow
+# Clicko Flow Dashboard
 
-An interactive project and payment tracking dashboard built with React, featuring demo data for managing deposits, remaining payments, project completion, monthly inflow, and targets.
+A comprehensive project management and financial planning dashboard for Clicko Digital.
 
 ## 🚀 Features
 
-**Clicko Flow** - Where payments flow smoothly
-
-### 📊 Dashboard Overview
-- **Summary Cards**: Total projects, deposits received, expected payments, and target achievement
-- **Interactive Charts**: Monthly revenue vs target, payment status, project status, and cash flow projection
-- **Real-time Updates**: All data updates dynamically when actions are performed
-
-### 📋 Project Management
-- **Comprehensive Table**: Sortable and filterable project list with all key information
-- **Search & Filter**: Search by client or project ID, filter by status and priority
-- **Action Buttons**: Send reminders, mark deposits paid, and complete projects
-- **Conditional Formatting**: Color-coded status indicators (Red/Yellow/Green)
-
-### ⚠️ Alerts & Actions
-- **Overdue Projects**: Highlight projects past their completion date
-- **Due Soon**: Projects due within 3 days
-- **Payment Issues**: Projects with no deposit or partial deposits
-- **Quick Actions**: One-click buttons for common tasks
-
-### 📈 Analytics
-- **Bar Charts**: Monthly revenue comparison
-- **Pie Charts**: Payment and project status distribution
-- **Line Charts**: Cash flow projections
-- **Responsive Design**: Works on desktop and tablet
+- **Project Management**: Create, edit, and track projects with detailed information
+- **Financial Planning**: Monthly forecasting and budget management
+- **Real-time Analytics**: Interactive charts and financial summaries
+- **User Authentication**: Secure JWT-based authentication
+- **Responsive Design**: Works on desktop and mobile devices
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: React 18
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **Icons**: Lucide React
-- **Date Handling**: date-fns
+- **Frontend**: React.js, Tailwind CSS, Recharts
+- **Backend**: Node.js, Express.js, MongoDB
+- **Authentication**: JWT (JSON Web Tokens)
+- **Deployment**: Docker, Docker Compose
 
-## 📦 Installation
+## 📋 Prerequisites
 
-1. **Navigate to the project directory**:
+- Node.js (v16 or higher)
+- npm or yarn
+- Docker and Docker Compose (for deployment)
+- MongoDB (included in Docker setup)
+
+## 🚀 Quick Start
+
+### Option 1: Docker Deployment (Recommended)
+
+1. **Clone the repository**
    ```bash
-   cd project-dashboard
+   git clone <repository-url>
+   cd clicko-flow
    ```
 
-2. **Install dependencies**:
+2. **Deploy with Docker**
    ```bash
-   npm install
+   ./deploy.sh
    ```
 
-3. **Start the development server**:
+3. **Access the application**
+   - Frontend: http://localhost:5001
+   - API: http://localhost:5001/api
+
+### Option 2: Local Development
+
+1. **Install dependencies**
    ```bash
-   npm start
+   npm run install-all
    ```
 
-4. **Open your browser** and visit `http://localhost:3000`
+2. **Set up environment variables**
+   ```bash
+   # Create .env file in root directory
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. **Start development servers**
+   ```bash
+   npm run dev
+   ```
+
+4. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend: http://localhost:5001
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+# Database
+MONGODB_URI=mongodb://localhost:27017/clicko-flow
+
+# JWT Secret
+JWT_SECRET=your-super-secret-jwt-key
+
+# Server Port
+PORT=5001
+
+# Environment
+NODE_ENV=development
+```
+
+### Docker Environment
+
+For Docker deployment, environment variables are set in `docker-compose.yml`:
+
+```yaml
+environment:
+  - NODE_ENV=production
+  - PORT=5001
+  - MONGODB_URI=mongodb://mongo:27017/clicko-flow
+  - JWT_SECRET=your-super-secret-jwt-key
+```
 
 ## 📁 Project Structure
 
 ```
-project-dashboard/
-├── public/
-│   └── index.html
-├── src/
-│   ├── components/
-│   │   ├── SummaryCards.js      # Dashboard summary metrics
-│   │   ├── Charts.js            # All chart components
-│   │   ├── ProjectsTable.js     # Main projects table
-│   │   └── AlertsSection.js     # Alerts and actions
-│   ├── data/
-│   │   └── demoData.js          # Demo project data
-│   ├── App.js                   # Main application component
-│   ├── index.js                 # Application entry point
-│   └── index.css                # Global styles
-├── package.json
-├── tailwind.config.js
-└── README.md
+clicko-flow/
+├── src/                    # Frontend React application
+│   ├── components/         # React components
+│   ├── pages/             # Page components
+│   ├── services/          # API services
+│   └── utils/             # Utility functions
+├── backend/               # Backend Node.js application
+│   ├── src/
+│   │   ├── controllers/   # Route controllers
+│   │   ├── middleware/    # Express middleware
+│   │   ├── models/        # MongoDB models
+│   │   ├── routes/        # API routes
+│   │   └── services/      # Business logic
+│   └── package.json
+├── public/                # Static files
+├── Dockerfile             # Docker configuration
+├── docker-compose.yml     # Docker Compose configuration
+└── package.json
 ```
 
-## 📊 Demo Data
+## 🔌 API Endpoints
 
-The dashboard includes 15 sample projects with realistic data:
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user
 
-- **Project IDs**: PROJ001-PROJ015
-- **Client Names**: Various company names
-- **Amounts**: $5,000 - $50,000
-- **Statuses**: In Progress, Completed, Pending
-- **Priorities**: High, Medium, Low
-- **Dates**: August-October 2025
+### Projects
+- `GET /api/projects` - Get all projects
+- `POST /api/projects` - Create new project
+- `PUT /api/projects/:id` - Update project
+- `DELETE /api/projects/:id` - Delete project
 
-## 🎯 Key Features Explained
+### Monthly Planning
+- `GET /api/monthly-planning/:month` - Get monthly planning data
+- `POST /api/monthly-planning` - Save monthly planning data
 
-### Summary Cards
-- **Total Projects**: Count of projects for selected month
-- **Deposits Received**: Sum of all deposits paid
-- **Expected Payments**: Remaining payments to be received
-- **Target Achievement**: Percentage of monthly target achieved
+## 🐳 Docker Commands
 
-### Interactive Table
-- **Sortable Columns**: Click headers to sort by any field
-- **Search Functionality**: Find projects by client or ID
-- **Status Filters**: Filter by project status and priority
-- **Action Buttons**: 
-  - 📧 Send reminder (for unpaid projects)
-  - 💰 Mark deposit paid
-  - ✅ Mark project complete
-  - ⚠️ Alert for due soon projects
+### Build and Run
+```bash
+# Build the application
+docker-compose build
 
-### Charts & Analytics
-- **Monthly Revenue vs Target**: Bar chart comparing expected vs actual
-- **Payment Status**: Pie chart showing paid/partial/pending
-- **Project Status**: Distribution of completed/in-progress/pending
-- **Cash Flow Projection**: Line chart for future months
+# Start the application
+docker-compose up -d
 
-### Alerts System
-- **Overdue Projects**: Red alerts for past due dates
-- **Due Soon**: Yellow alerts for projects due within 3 days
-- **Payment Issues**: Red alerts for no deposits, yellow for partial
-- **Quick Actions**: Buttons to resolve issues immediately
+# View logs
+docker-compose logs -f
 
-## 🎨 Design Features
+# Stop the application
+docker-compose down
+```
 
-- **Responsive Layout**: Works on desktop and tablet
-- **Modern UI**: Clean, professional design with Tailwind CSS
-- **Color Coding**: 
-  - 🟢 Green: Completed/Paid
-  - 🟡 Yellow: Due soon/Partial payment
-  - 🔴 Red: Overdue/No payment
-- **Interactive Elements**: Hover effects and smooth transitions
+### Development with Docker
+```bash
+# Build development image
+docker-compose -f docker-compose.dev.yml up --build
 
-## 🔧 Customization
+# Run tests
+docker-compose exec app npm test
+```
 
-### Adding New Projects
-Edit `src/data/demoData.js` to add more projects:
+## 🔍 Troubleshooting
 
+### Common Issues
+
+1. **Port already in use**
+   ```bash
+   # Check what's using the port
+   lsof -i :5001
+   # Kill the process
+   kill -9 <PID>
+   ```
+
+2. **MongoDB connection issues**
+   ```bash
+   # Check if MongoDB is running
+   docker-compose ps
+   # Restart MongoDB
+   docker-compose restart mongo
+   ```
+
+3. **Build errors**
+   ```bash
+   # Clear Docker cache
+   docker system prune -a
+   # Rebuild
+   docker-compose build --no-cache
+   ```
+
+### Logs and Debugging
+
+```bash
+# View application logs
+docker-compose logs app
+
+# View MongoDB logs
+docker-compose logs mongo
+
+# Access MongoDB shell
+docker-compose exec mongo mongosh
+```
+
+## 📊 Database Schema
+
+### Projects Collection
 ```javascript
 {
-  id: "PROJ016",
-  clientName: "New Client",
-  totalAmount: 25000,
-  depositPaid: 12500,
-  depositDate: "2025-08-10",
-  expectedCompletion: "2025-09-15",
-  status: "In Progress",
-  monthOfPayment: "September 2025",
-  priority: "Medium"
+  userId: ObjectId,
+  projectId: String,
+  projectName: String,
+  clientName: String,
+  totalAmount: Number,
+  depositPaid: Number,
+  expectedStartDate: Date,
+  expectedCompletion: Date,
+  status: String,
+  priority: String,
+  category: String,
+  assignedTo: String,
+  progress: Number
 }
 ```
 
-### Modifying Charts
-Update chart configurations in `src/components/Charts.js`
-
-### Styling Changes
-Modify `tailwind.config.js` for theme customization
-
-## 🚀 Future Enhancements
-
-- **API Integration**: Connect to real backend services
-- **User Authentication**: Login and user management
-- **Export Features**: PDF reports and CSV exports
-- **Notifications**: Real-time alerts and email notifications
-- **Mobile App**: React Native version
-- **Advanced Analytics**: More detailed reporting and insights
-
-## 📝 License
-
-This project is created for demonstration purposes. Feel free to use and modify as needed.
+### Monthly Planning Collection
+```javascript
+{
+  userId: ObjectId,
+  month: String,
+  revenue: Number,
+  expenses: Number,
+  revenueStreams: Array,
+  overhead: Array,
+  generalExpenses: Array,
+  notes: String
+}
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Add tests if applicable
 5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Contact the development team
+- Check the troubleshooting section above
 
 ---
 
-**Built with ❤️ using React and modern web technologies**
+**Made with ❤️ by Clicko Digital Team**

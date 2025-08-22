@@ -1,7 +1,19 @@
 {
-  "name": "clicko-flow",
-  "version": "0.1.0",
-  "private": true,
+  "name": "clicko-flow-dashboard",
+  "version": "1.0.0",
+  "description": "Project Dashboard for Clicko Digital",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dev": "concurrently \"npm run start\" \"cd backend && npm run dev\"",
+    "install-all": "npm install && cd backend && npm install",
+    "build-all": "npm run build && cd backend && npm run build",
+    "deploy": "npm run build && cd backend && npm run build",
+    "start:prod": "node backend/src/server.js"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
@@ -9,16 +21,12 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "recharts": "^2.5.0",
-    "date-fns": "^2.29.3",
+    "recharts": "^2.1.16",
     "lucide-react": "^0.263.1",
     "web-vitals": "^2.1.4"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+  "devDependencies": {
+    "concurrently": "^7.6.0"
   },
   "eslintConfig": {
     "extends": [
@@ -37,5 +45,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   }
 }

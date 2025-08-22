@@ -1,0 +1,13 @@
+{
+  "name": "clicko-flow-dashboard",
+  "version": "1.0.0",
+  "description": "Clicko Flow Dashboard",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "build": "npm run build-all",
+    "start": "npm run start:prod"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
