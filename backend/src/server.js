@@ -51,15 +51,18 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-fl
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Routes - temporarily disabled to isolate issues
-// app.use('/api/auth', authRoutes);
+// Routes - re-enabling one by one to find the issue
+app.use('/api/auth', authRoutes);
+console.log('✅ Auth routes enabled');
+
+// Temporarily keep these disabled until we find the issue
 // app.use('/api/projects', projectRoutes);
 // app.use('/api/settings', settingsRoutes);
 // app.use('/api/forecast', forecastRoutes);
 // app.use('/api/salesmate', salesmateRoutes);
 // app.use('/api/monthly-planning', monthlyPlanningRoutes);
 
-console.log('🔧 Routes temporarily disabled for debugging');
+console.log('🔧 Other routes still disabled for debugging');
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
