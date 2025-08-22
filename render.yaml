@@ -27,3 +27,5 @@ services:
         value: https://clicko-flow-api.onrender.com/api
       - key: REACT_APP_ENVIRONMENT
         value: production
+      - key: FORCE_REDEPLOY
+        value: "2025-08-22-20-40"
