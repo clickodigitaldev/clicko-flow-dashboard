@@ -11,7 +11,7 @@ services:
       - key: PORT
         value: 10000
       - key: MONGODB_URI
-        value: mongodb+srv://clickoflow:clickoflow123@cluster0.abc123.mongodb.net/clicko-flow?retryWrites=true&w=majority
+        value: mongodb+srv://clickoflow:clickoflow123@cluster0.iyzvuzc.mongodb.net/clicko-flow?retryWrites=true&w=majority&appName=Cluster0
       - key: JWT_SECRET
         value: your-super-secret-jwt-key-here
       - key: CORS_ORIGIN
