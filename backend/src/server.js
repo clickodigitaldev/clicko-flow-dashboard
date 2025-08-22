@@ -51,13 +51,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-fl
 .then(() => console.log('✅ Connected to MongoDB'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/forecast', forecastRoutes);
-app.use('/api/salesmate', salesmateRoutes);
-app.use('/api/monthly-planning', monthlyPlanningRoutes);
+// Routes - temporarily disabled to isolate issues
+// app.use('/api/auth', authRoutes);
+// app.use('/api/projects', projectRoutes);
+// app.use('/api/settings', settingsRoutes);
+// app.use('/api/forecast', forecastRoutes);
+// app.use('/api/salesmate', salesmateRoutes);
+// app.use('/api/monthly-planning', monthlyPlanningRoutes);
+
+console.log('🔧 Routes temporarily disabled for debugging');
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -154,6 +156,32 @@ app.get('/api/demo/projects', (req, res) => {
   } catch (error) {
     console.error('Demo projects error:', error);
     res.status(500).json({ error: 'Failed to get demo projects' });
+  }
+});
+
+// Test endpoint to check backend health
+app.get('/api/test', (req, res) => {
+  try {
+    res.json({ 
+      status: 'Backend is working',
+      timestamp: new Date().toISOString(),
+      message: 'If you see this, the backend is responding correctly'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Test endpoint failed' });
+  }
+});
+
+// Test endpoint with authentication
+app.get('/api/test-auth', protect, (req, res) => {
+  try {
+    res.json({ 
+      status: 'Authentication working',
+      user: req.user,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Auth test failed' });
   }
 });
 
