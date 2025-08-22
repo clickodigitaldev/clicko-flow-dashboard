@@ -74,17 +74,26 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
   // Filter projects by current month
   const currentMonthProjects = projects.filter(p => p.monthOfPayment === currentMonth);
   
+  // Debug logging
+  console.log('🔍 SummaryCards Debug:', {
+    currentMonth,
+    totalProjects: projects.length,
+    currentMonthProjects: currentMonthProjects.length,
+    forecastData: forecastData,
+    sampleProject: currentMonthProjects[0]
+  });
+  
   // Use database forecast data for calculations
   const totalProjects = currentMonthProjects.length;
   
   // Get forecast data for current month
   const forecastRevenueStreams = forecastData?.revenueStreams || [];
-  const forecastOverhead = forecastData?.overheadExpenses || []; // Fixed property name
+  const forecastOverhead = forecastData?.overhead || []; // Use correct property name from database
   const forecastGeneralExpenses = forecastData?.generalExpenses || [];
   
   // Calculate totals from forecast data
   const expectedRevenue = forecastRevenueStreams.reduce((sum, stream) => sum + (stream.amount || 0), 0);
-  const totalOverhead = forecastOverhead.reduce((sum, pos) => sum + (pos.amount || 0), 0); // Fixed property name
+  const totalOverhead = forecastOverhead.reduce((sum, pos) => sum + (pos.salary || 0), 0); // Use salary from database
   const totalGeneralExpenses = forecastGeneralExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
   const totalExpenses = totalOverhead + totalGeneralExpenses;
   
