@@ -44,12 +44,21 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Database connection
+let isDatabaseConnected = false;
+
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-flow', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
+.then(() => {
+  console.log('✅ Connected to MongoDB');
+  isDatabaseConnected = true;
+})
+.catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+  console.log('⚠️ Running in demo mode without database connection');
+  isDatabaseConnected = false;
+});
 
 // Simple working routes - no complex imports
 console.log('🚀 Setting up simple working routes...');
@@ -57,6 +66,50 @@ console.log('🚀 Setting up simple working routes...');
 // Projects endpoints
 app.get('/api/projects', async (req, res) => {
   try {
+    if (!isDatabaseConnected) {
+      console.log('⚠️ Database not connected, returning demo projects');
+      // Return demo projects when database is not available
+      const demoProjects = [
+        {
+          _id: 'demo-proj-1',
+          projectId: 'PROJ001',
+          clientName: 'TechCorp Inc',
+          projectName: 'E-commerce Platform',
+          totalAmount: 50000,
+          depositPaid: 15000,
+          depositDate: '2025-08-01',
+          expectedStartDate: '2025-08-01',
+          expectedCompletion: '2025-09-30',
+          status: 'In Progress',
+          monthOfPayment: 'August 2025',
+          priority: 'High',
+          description: 'Modern e-commerce platform with payment integration',
+          category: 'Web Development',
+          assignedTo: 'John Developer',
+          progress: 65
+        },
+        {
+          _id: 'demo-proj-2',
+          projectId: 'PROJ002',
+          clientName: 'Digital Solutions',
+          projectName: 'Mobile App Development',
+          totalAmount: 35000,
+          depositPaid: 10000,
+          depositDate: '2025-08-05',
+          expectedStartDate: '2025-08-05',
+          expectedCompletion: '2025-10-15',
+          status: 'Planning',
+          monthOfPayment: 'August 2025',
+          priority: 'Medium',
+          description: 'Cross-platform mobile application',
+          category: 'Mobile Development',
+          assignedTo: 'Sarah Mobile',
+          progress: 25
+        }
+      ];
+      return res.json(demoProjects);
+    }
+    
     // Query the actual database for projects
     const Project = require('./models/Project');
     const projects = await Project.find({}).sort({ monthOfPayment: 1, expectedStartDate: 1 });
@@ -129,6 +182,29 @@ app.get('/api/monthly-planning/:month', async (req, res) => {
   try {
     const month = req.params.month;
     
+    if (!isDatabaseConnected) {
+      console.log(`⚠️ Database not connected, returning demo monthly planning for ${month}`);
+      // Return demo monthly planning when database is not available
+      const demoData = {
+        month: month,
+        revenueStreams: [
+          { name: 'Product & Service', amount: 25000 },
+          { name: 'Ecommerce', amount: 15000 }
+        ],
+        overhead: [
+          { name: 'Product Developer Team', salary: 8000 },
+          { name: 'Service Team', salary: 6000 },
+          { name: 'Management Team', salary: 4000 }
+        ],
+        generalExpenses: [
+          { name: 'Office Rent', amount: 2000 },
+          { name: 'Utilities', amount: 500 }
+        ],
+        notes: 'Demo data for testing purposes. Replace with real data when available.'
+      };
+      return res.json(demoData);
+    }
+    
     // Try to get data from database first
     const MonthlyPlanning = require('./models/MonthlyPlanning');
     const monthData = await MonthlyPlanning.findOne({ month: month });
@@ -145,8 +221,8 @@ app.get('/api/monthly-planning/:month', async (req, res) => {
           { name: 'Product & Service', amount: 25000 },
           { name: 'Ecommerce', amount: 15000 }
         ],
-        overheadExpenses: [
-          { name: 'Product Developer Team', amount: 8000 },
+        overhead: [
+          { name: 'Product Developer Team', salary: 8000 },
           { name: 'Service Team', amount: 6000 },
           { name: 'Management Team', amount: 4000 }
         ],
