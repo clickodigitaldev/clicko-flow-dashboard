@@ -210,4 +210,5 @@ app.listen(PORT, () => {
   console.log(`🎭 Demo token endpoint at http://localhost:${PORT}/api/demo/token`);
   console.log(`🔐 Demo authentication enabled for user: demo-user-123`);
   console.log(`📊 Backend ready for demo users and real database access`);
+  console.log(`🚀 FORCE REDEPLOY: Backend updated at ${new Date().toISOString()}`);
 });
