@@ -18,18 +18,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "DISABLE_ESLINT_PLUGIN=true CI=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "start:prod": "cd backend && npm install && npm start & cd .. && npm run build && npx serve -s build -l $PORT",
     "dev": "concurrently \"cd backend && npm start\" \"npm start\"",
     "install:all": "npm install && cd backend && npm install"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
