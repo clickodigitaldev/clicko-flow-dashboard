@@ -343,11 +343,15 @@ router.post('/nifty', async (req, res) => {
       const progress = niftyProject.progress || 0;
       console.log('📈 Project progress from Nifty:', progress);
       
+      // Convert decimal progress to percentage (0.7307 -> 73.07)
+      const progressPercentage = Math.round(progress * 100 * 100) / 100; // Round to 2 decimal places
+      console.log('📊 Progress percentage:', progressPercentage);
+      
       // Update our project with the new progress
-      project.progress = progress;
+      project.progress = progressPercentage;
       await project.save();
       
-      console.log('✅ Project progress updated:', project.projectId, 'Progress:', progress);
+      console.log('✅ Project progress updated:', project.projectId, 'Progress:', progressPercentage + '%');
       
       // Return success response
       res.status(200).json({
@@ -356,7 +360,7 @@ router.post('/nifty', async (req, res) => {
         data: {
           projectId: project.projectId,
           projectName: project.projectName,
-          progress: progress,
+          progress: progressPercentage,
           niftyProjectId: niftyProjectId
         }
       });
