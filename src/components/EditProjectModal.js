@@ -121,18 +121,17 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
   if (!isOpen || !project) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="glass-card w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white border-opacity-20">
-          <h2 className="text-xl font-bold text-primary">Edit Project: {project.projectName}</h2>
-          <button
-            onClick={onClose}
-            className="action-button"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <div className="glass-card w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-white border-opacity-20">
+        <h2 className="text-xl font-bold text-primary">Edit Project: {project.projectName}</h2>
+        <button
+          onClick={onClose}
+          className="action-button"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
         {/* Error Message */}
         {error && (

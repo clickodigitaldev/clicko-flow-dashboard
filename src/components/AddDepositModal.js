@@ -89,15 +89,14 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="glass-card w-full max-w-md">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <DollarSign className="w-5 h-5" />
-              Add Deposit
-            </h2>
+    <div className="glass-card w-full max-w-md">
+      <div className="p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <DollarSign className="w-5 h-5" />
+            Add Deposit
+          </h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-300 transition-colors"
