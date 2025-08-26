@@ -417,8 +417,8 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                         <MoreVertical className="w-4 h-4" />
                       </button>
                       
-                      {activeActionMenu === project.projectId && (
-                        <div className="action-menu absolute right-0 top-full mt-2 w-64 z-50 glass-card border border-white border-opacity-30 backdrop-blur-md bg-black bg-opacity-90 shadow-2xl rounded-lg">
+                                              {activeActionMenu === project.projectId && (
+                          <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-black bg-opacity-98 backdrop-blur-md border border-white border-opacity-50 shadow-2xl rounded-lg">
                           <div className="py-2">
                             <button
                               onClick={() => handleActionClick('check-status', project)}
