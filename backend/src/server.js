@@ -16,7 +16,17 @@ const orgChartRoutes = require('./routes/orgChart');
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://clicko-flow-dashboard-production-7c2e.up.railway.app"]
+    }
+  }
+}));
 app.use(morgan('combined'));
 
 // CORS configuration - allow both localhost and production domains
@@ -49,6 +59,14 @@ app.use(express.urlencoded({ extended: true }));
 
 // Database connection - use Railway MongoDB or local MongoDB
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-flow';
+
+console.log('🔌 Attempting to connect to MongoDB...');
+console.log('🌍 Environment:', process.env.NODE_ENV);
+console.log('📡 MONGODB_URI set:', !!MONGODB_URI);
+if (MONGODB_URI) {
+  console.log('🔗 Connection string preview:', MONGODB_URI.substring(0, 50) + '...');
+}
+
 mongoose.connect(MONGODB_URI)
 .then(async () => {
   console.log('✅ Connected to MongoDB');
@@ -59,12 +77,18 @@ mongoose.connect(MONGODB_URI)
     const Project = require('./models/Project');
     const MonthlyPlanning = require('./models/MonthlyPlanning');
     
+    // Check if collections exist and have data
     const existingOrgChart = await OrgChart.findOne();
     const existingProjects = await Project.findOne();
     const existingMonthlyPlanning = await MonthlyPlanning.findOne();
     
+    console.log('📊 Database status:');
+    console.log('   - Org Chart data:', existingOrgChart ? 'Found' : 'Not found');
+    console.log('   - Projects data:', existingProjects ? 'Found' : 'Not found');
+    console.log('   - Monthly Planning data:', existingMonthlyPlanning ? 'Found' : 'Not found');
+    
     if (!existingOrgChart) {
-      console.log('📊 Initializing database with default org chart data...');
+      console.log('📊 Creating default org chart...');
       const defaultOrgChart = new OrgChart({
         ceo: {
           name: 'John Doe',
@@ -141,13 +165,12 @@ mongoose.connect(MONGODB_URI)
           }
         ]
       });
-      
       await defaultOrgChart.save();
-      console.log('✅ Default org chart data created');
+      console.log('✅ Default org chart created');
     }
     
     if (!existingProjects) {
-      console.log('📊 Initializing database with sample projects...');
+      console.log('📋 Creating sample projects...');
       const sampleProjects = [
         {
           projectId: 'CL001',
@@ -190,13 +213,12 @@ mongoose.connect(MONGODB_URI)
           monthOfPayment: 'September 2025'
         }
       ];
-      
       await Project.insertMany(sampleProjects);
       console.log('✅ Sample projects created');
     }
     
     if (!existingMonthlyPlanning) {
-      console.log('📊 Initializing database with sample monthly planning...');
+      console.log('📅 Creating sample monthly planning...');
       const sampleMonthlyPlanning = new MonthlyPlanning({
         userId: '68a79730091b06b0654ec04a',
         month: 'August 2025',
@@ -243,7 +265,6 @@ mongoose.connect(MONGODB_URI)
           }
         ]
       });
-      
       await sampleMonthlyPlanning.save();
       console.log('✅ Sample monthly planning created');
     }
@@ -251,7 +272,9 @@ mongoose.connect(MONGODB_URI)
     console.error('❌ Error initializing database:', error);
   }
 })
-.catch(err => console.error('❌ MongoDB connection error:', err));
+.catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+});
 
 // Routes - API endpoints
 app.use('/api/auth', authRoutes);
@@ -267,7 +290,8 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     message: 'Clicko Flow API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    mongodb_uri_set: !!process.env.MONGODB_URI
   });
 });
 

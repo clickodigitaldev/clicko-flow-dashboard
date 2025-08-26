@@ -24,7 +24,8 @@
     "start:prod": "npm run build && cd backend && npm install && npm start",
     "dev": "concurrently \"cd backend && npm start\" \"npm start\"",
     "install:all": "npm install && cd backend && npm install",
-    "init-db": "node init-database.js"
+    "init-db": "node init-database.js",
+    "test-db": "node test-db-connection.js"
   },
   "browserslist": {
     "production": [
