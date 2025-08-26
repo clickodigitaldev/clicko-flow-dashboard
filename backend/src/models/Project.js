@@ -8,7 +8,7 @@ const projectSchema = new mongoose.Schema({
   },
   projectId: {
     type: String,
-    required: true,
+    required: false,
     unique: true
   },
   projectName: {
@@ -26,10 +26,34 @@ const projectSchema = new mongoose.Schema({
     required: [true, 'Total amount is required'],
     min: [0, 'Total amount cannot be negative']
   },
+  // Currency fields for multi-currency support
+  totalAmountCurrency: {
+    type: String,
+    enum: ['AED', 'USD', 'BDT'],
+    default: 'AED',
+    required: true
+  },
+  totalAmountInBase: {
+    type: Number,
+    required: [true, 'Total amount in base currency (AED) is required'],
+    min: [0, 'Total amount in base currency cannot be negative']
+  },
   depositPaid: {
     type: Number,
     default: 0,
     min: [0, 'Deposit paid cannot be negative']
+  },
+  // Currency fields for deposit
+  depositPaidCurrency: {
+    type: String,
+    enum: ['AED', 'USD', 'BDT'],
+    default: 'AED',
+    required: true
+  },
+  depositPaidInBase: {
+    type: Number,
+    default: 0,
+    min: [0, 'Deposit paid in base currency cannot be negative']
   },
   depositDate: {
     type: Date
@@ -44,7 +68,7 @@ const projectSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'In Progress', 'Completed', 'On Hold', 'Cancelled'],
+    enum: ['Pending', 'In Progress', 'Completed', 'On Hold', 'Cancelled', 'Planning'],
     default: 'Pending'
   },
   priority: {
@@ -55,18 +79,6 @@ const projectSchema = new mongoose.Schema({
   monthOfPayment: {
     type: String,
     required: true
-  },
-  // Salesmate integration fields
-  salesmateDealId: {
-    type: String,
-    unique: true,
-    sparse: true
-  },
-  salesmateDealValue: {
-    type: Number
-  },
-  salesmateDealStage: {
-    type: String
   },
   // Additional project details
   description: {
@@ -81,9 +93,19 @@ const projectSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  // Payment tracking
+  // Payment tracking with currency support
   paymentHistory: [{
     amount: {
+      type: Number,
+      required: true
+    },
+    amountCurrency: {
+      type: String,
+      enum: ['AED', 'USD', 'BDT'],
+      default: 'AED',
+      required: true
+    },
+    amountInBase: {
       type: Number,
       required: true
     },
@@ -98,7 +120,7 @@ const projectSchema = new mongoose.Schema({
     },
     description: String
   }],
-  // Milestones
+  // Milestones with currency support
   milestones: [{
     name: {
       type: String,
@@ -109,6 +131,16 @@ const projectSchema = new mongoose.Schema({
       required: true
     },
     amount: {
+      type: Number,
+      required: true
+    },
+    amountCurrency: {
+      type: String,
+      enum: ['AED', 'USD', 'BDT'],
+      default: 'AED',
+      required: true
+    },
+    amountInBase: {
       type: Number,
       required: true
     },
@@ -125,9 +157,13 @@ const projectSchema = new mongoose.Schema({
 // Index for better query performance
 projectSchema.index({ userId: 1, status: 1 });
 projectSchema.index({ userId: 1, expectedCompletion: 1 });
-projectSchema.index({ salesmateDealId: 1 });
 
-// Virtual for remaining payment
+// Virtual for remaining payment in base currency
+projectSchema.virtual('remainingPaymentInBase').get(function() {
+  return this.totalAmountInBase - this.depositPaidInBase;
+});
+
+// Virtual for remaining payment in current currency (for display)
 projectSchema.virtual('remainingPayment').get(function() {
   return this.totalAmount - this.depositPaid;
 });

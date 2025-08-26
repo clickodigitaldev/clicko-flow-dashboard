@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, DollarSign, TrendingUp, TrendingDown, Calculator, Save, ArrowLeft, ArrowRight, Plus, Trash2 } from 'lucide-react';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) => {
+  const { formatCurrency, convertFromBase, convertToBase, currentCurrency } = useCurrency();
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
   const [localMonthlyData, setLocalMonthlyData] = useState([]);
   const [summaryData, setSummaryData] = useState({});
@@ -22,9 +24,9 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
           month: monthName,
           revenue: 150000,
           overhead: [
-            { id: 1, name: 'Developer', salary: 8000 },
-            { id: 2, name: 'Designer', salary: 6000 },
-            { id: 3, name: 'Project Manager', salary: 7000 }
+            { id: 1, name: 'Senior Developer', salary: 8000, team: 'service' },
+            { id: 2, name: 'UI/UX Designer', salary: 6000, team: 'product' },
+            { id: 3, name: 'Project Manager', salary: 7000, team: 'management' }
           ],
           generalExpenses: [
             { id: 1, name: 'Office Rent', amount: 3000 },
@@ -81,14 +83,14 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
     );
   };
 
-  const addOverheadPosition = (monthIndex) => {
+  const addOverheadPosition = (monthIndex, team = 'service') => {
     setLocalMonthlyData(prev => 
       prev.map((month, index) => {
         if (index === monthIndex) {
           const newId = Math.max(...month.overhead.map(item => item.id), 0) + 1;
           return {
             ...month,
-            overhead: [...month.overhead, { id: newId, name: '', salary: 0 }]
+            overhead: [...month.overhead, { id: newId, name: '', salary: 0, team }]
           };
         }
         return month;
@@ -124,6 +126,15 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
         return month;
       })
     );
+  };
+
+  const getTeamTotal = (monthIndex, team) => {
+    const monthData = localMonthlyData[monthIndex];
+    if (!monthData) return 0;
+    const totalInBase = monthData.overhead
+      .filter(position => position.team === team)
+      .reduce((sum, position) => sum + (position.salary || 0), 0);
+    return convertFromBase(totalInBase);
   };
 
   const addGeneralExpense = (monthIndex) => {
@@ -183,6 +194,12 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
   const monthlyProfit = (currentMonth?.revenue || 0) - totalMonthlyExpenses;
   const isBreakEvenAchieved = (currentMonth?.revenue || 0) >= (currentMonth?.breakEven || 0);
 
+  // Convert values to current currency for display
+  const totalOverheadInCurrentCurrency = convertFromBase(totalOverhead);
+  const totalGeneralExpensesInCurrentCurrency = convertFromBase(totalGeneralExpenses);
+  const totalMonthlyExpensesInCurrentCurrency = convertFromBase(totalMonthlyExpenses);
+  const monthlyProfitInCurrentCurrency = convertFromBase(monthlyProfit);
+
   if (!isOpen) return null;
 
   return (
@@ -208,18 +225,18 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="gradient-card-blue p-4 rounded-xl">
               <h3 className="text-sm font-semibold text-white opacity-70 mb-2">Total Revenue (24 Months)</h3>
-              <p className="text-2xl font-bold text-white">${summaryData.totalRevenue?.toLocaleString() || 0}</p>
-              <p className="text-sm text-white opacity-70">Avg: ${summaryData.averageMonthlyRevenue?.toLocaleString() || 0}/month</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(summaryData.totalRevenue || 0)}</p>
+              <p className="text-sm text-white opacity-70">Avg: {formatCurrency(summaryData.averageMonthlyRevenue || 0)}/month</p>
             </div>
             <div className="gradient-card-purple p-4 rounded-xl">
               <h3 className="text-sm font-semibold text-white opacity-70 mb-2">Total Expenses (24 Months)</h3>
-              <p className="text-2xl font-bold text-white">${summaryData.totalExpenses?.toLocaleString() || 0}</p>
-              <p className="text-sm text-white opacity-70">Avg: ${summaryData.averageMonthlyExpenses?.toLocaleString() || 0}/month</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(summaryData.totalExpenses || 0)}</p>
+              <p className="text-sm text-white opacity-70">Avg: {formatCurrency(summaryData.averageMonthlyExpenses || 0)}/month</p>
             </div>
             <div className="gradient-card-green p-4 rounded-xl">
               <h3 className="text-sm font-semibold text-white opacity-70 mb-2">Total Profit (24 Months)</h3>
               <p className={`text-2xl font-bold ${summaryData.totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                ${summaryData.totalProfit?.toLocaleString() || 0}
+                {formatCurrency(summaryData.totalProfit || 0)}
               </p>
               <p className="text-sm text-white opacity-70">
                 {summaryData.monthsAboveBreakEven || 0}/24 months above break-even
@@ -227,7 +244,7 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
             </div>
             <div className="gradient-card-orange p-4 rounded-xl">
               <h3 className="text-sm font-semibold text-white opacity-70 mb-2">Break-even Target</h3>
-              <p className="text-2xl font-bold text-white">${summaryData.totalBreakEvenTarget?.toLocaleString() || 0}</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(summaryData.totalBreakEvenTarget || 0)}</p>
               <p className="text-sm text-white opacity-70">Total across 24 months</p>
             </div>
           </div>
@@ -267,27 +284,47 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm text-white opacity-70 mb-2">
-                    Expected Revenue ($)
+                    Expected Revenue ({currentCurrency})
                   </label>
-                  <input
-                    type="number"
-                    value={currentMonth?.revenue || 0}
-                    onChange={(e) => updateMonthData(currentMonthIndex, 'revenue', parseFloat(e.target.value) || 0)}
-                    className="modern-input w-full"
-                    placeholder="150000"
-                  />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertFromBase(currentMonth?.revenue || 0).toFixed(2)}
+                      onChange={(e) => {
+                        const newRevenue = parseFloat(e.target.value) || 0;
+                        // Convert from current currency to base currency before saving
+                        const revenueInBase = convertToBase(newRevenue);
+                        updateMonthData(currentMonthIndex, 'revenue', revenueInBase);
+                      }}
+                      className="modern-input w-32 pr-8"
+                      placeholder="Revenue"
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-white opacity-70">
+                      {currentCurrency}
+                    </span>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm text-white opacity-70 mb-2">
-                    Break-even Point ($)
+                    Break-even Point ({currentCurrency})
                   </label>
-                  <input
-                    type="number"
-                    value={currentMonth?.breakEven || 0}
-                    onChange={(e) => updateMonthData(currentMonthIndex, 'breakEven', parseFloat(e.target.value) || 0)}
-                    className="modern-input w-full"
-                    placeholder="120000"
-                  />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={convertFromBase(currentMonth?.breakEven || 0).toFixed(2)}
+                      onChange={(e) => {
+                        const newBreakEven = parseFloat(e.target.value) || 0;
+                        // Convert from current currency to base currency before saving
+                        const breakEvenInBase = convertToBase(newBreakEven);
+                        updateMonthData(currentMonthIndex, 'breakEven', breakEvenInBase);
+                      }}
+                      className="modern-input w-32 pr-8"
+                      placeholder="Break-even"
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-white opacity-70">
+                      {currentCurrency}
+                    </span>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm text-white opacity-70 mb-2">
@@ -312,25 +349,25 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-white opacity-70">Revenue:</span>
-                  <span className="text-white font-semibold">${(currentMonth?.revenue || 0).toLocaleString()}</span>
+                  <span className="text-white font-semibold">{formatCurrency(currentMonth?.revenue || 0)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white opacity-70">Total Overhead:</span>
-                  <span className="text-white font-semibold">${totalOverhead.toLocaleString()}</span>
+                  <span className="text-white font-semibold">{formatCurrency(totalOverheadInCurrentCurrency)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white opacity-70">General Expenses:</span>
-                  <span className="text-white font-semibold">${totalGeneralExpenses.toLocaleString()}</span>
+                  <span className="text-white font-semibold">{formatCurrency(totalGeneralExpensesInCurrentCurrency)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white opacity-70">Total Expenses:</span>
-                  <span className="text-white font-semibold">${totalMonthlyExpenses.toLocaleString()}</span>
+                  <span className="text-white font-semibold">{formatCurrency(totalMonthlyExpensesInCurrentCurrency)}</span>
                 </div>
                 <div className="border-t border-gray-600 pt-3">
                   <div className="flex justify-between">
                     <span className="text-white opacity-70">Monthly Profit:</span>
                     <span className={`font-semibold ${monthlyProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      ${monthlyProfit.toLocaleString()}
+                      {formatCurrency(monthlyProfitInCurrentCurrency)}
                     </span>
                   </div>
                 </div>
@@ -349,41 +386,215 @@ const MonthlyPlanning = ({ isOpen, onClose, monthlyData, onSaveMonthlyData }) =>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-white flex items-center">
                 <TrendingUp className="w-5 h-5 mr-2" />
-                Overhead Expenses - {currentMonth?.month}
+                Team Overhead - {currentMonth?.month}
               </h3>
-              <button
-                onClick={() => addOverheadPosition(currentMonthIndex)}
-                className="modern-button flex items-center"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Position
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => addOverheadPosition(currentMonthIndex, 'service')}
+                  className="modern-button flex items-center text-xs bg-blue-500 hover:bg-blue-600"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Service
+                </button>
+                <button
+                  onClick={() => addOverheadPosition(currentMonthIndex, 'product')}
+                  className="modern-button flex items-center text-xs bg-purple-500 hover:bg-purple-600"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Product
+                </button>
+                <button
+                  onClick={() => addOverheadPosition(currentMonthIndex, 'management')}
+                  className="modern-button flex items-center text-xs bg-green-500 hover:bg-green-600"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Management
+                </button>
+              </div>
             </div>
-            <div className="space-y-4">
-              {currentMonth?.overhead?.map((position) => (
-                <div key={position.id} className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg">
-                  <input
-                    type="text"
-                    value={position.name}
-                    onChange={(e) => updateOverheadPosition(currentMonthIndex, position.id, 'name', e.target.value)}
-                    className="modern-input flex-1"
-                    placeholder="Position name"
-                  />
-                  <input
-                    type="number"
-                    value={position.salary}
-                    onChange={(e) => updateOverheadPosition(currentMonthIndex, position.id, 'salary', parseFloat(e.target.value) || 0)}
-                    className="modern-input w-32"
-                    placeholder="Salary"
-                  />
-                  <button
-                    onClick={() => removeOverheadPosition(currentMonthIndex, position.id)}
-                    className="text-red-400 hover:text-red-300 transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+
+            {/* Service Team */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-md font-medium text-blue-400 flex items-center">
+                  <div className="w-3 h-3 bg-blue-400 rounded-full mr-2"></div>
+                  Service Team
+                </h4>
+                <span className="text-sm text-white opacity-70">
+                  Total: {formatCurrency(getTeamTotal(currentMonthIndex, 'service'))}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {currentMonth?.overhead?.filter(position => position.team === 'service').map((position) => (
+                  <div key={position.id} className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg border-l-4 border-blue-400">
+                    <input
+                      type="text"
+                      value={position.name}
+                      onChange={(e) => updateOverheadPosition(currentMonthIndex, position.id, 'name', e.target.value)}
+                      className="modern-input flex-1"
+                      placeholder="Position name"
+                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={convertFromBase(position.salary || 0).toFixed(2)}
+                        onChange={(e) => {
+                          const newSalary = parseFloat(e.target.value) || 0;
+                          // Convert from current currency to base currency before saving
+                          const salaryInBase = convertToBase(newSalary);
+                          updateOverheadPosition(currentMonthIndex, position.id, 'salary', salaryInBase);
+                        }}
+                        className="modern-input w-32 pr-8"
+                        placeholder="Salary"
+                      />
+                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-white opacity-70">
+                        {currentCurrency}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeOverheadPosition(currentMonthIndex, position.id)}
+                      className="text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))}
+                {(!currentMonth?.overhead?.filter(position => position.team === 'service').length || 
+                  currentMonth?.overhead?.filter(position => position.team === 'service').length === 0) && (
+                  <div className="text-center py-4 text-white opacity-50 text-sm border-2 border-dashed border-gray-600 rounded-lg">
+                    No Service Team positions added yet
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Product Team */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-md font-medium text-purple-400 flex items-center">
+                  <div className="w-3 h-3 bg-purple-400 rounded-full mr-2"></div>
+                  Product Team
+                </h4>
+                <span className="text-sm text-white opacity-70">
+                  Total: {formatCurrency(getTeamTotal(currentMonthIndex, 'product'))}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {currentMonth?.overhead?.filter(position => position.team === 'product').map((position) => (
+                  <div key={position.id} className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg border-l-4 border-purple-400">
+                    <input
+                      type="text"
+                      value={position.name}
+                      onChange={(e) => updateOverheadPosition(currentMonthIndex, position.id, 'name', e.target.value)}
+                      className="modern-input flex-1"
+                      placeholder="Position name"
+                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={convertFromBase(position.salary || 0).toFixed(2)}
+                        onChange={(e) => {
+                          const newSalary = parseFloat(e.target.value) || 0;
+                          // Convert from current currency to base currency before saving
+                          const salaryInBase = convertToBase(newSalary);
+                          updateOverheadPosition(currentMonthIndex, position.id, 'salary', salaryInBase);
+                        }}
+                        className="modern-input w-32 pr-8"
+                        placeholder="Salary"
+                      />
+                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-white opacity-70">
+                        {currentCurrency}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeOverheadPosition(currentMonthIndex, position.id)}
+                      className="text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                  ))}
+                {(!currentMonth?.overhead?.filter(position => position.team === 'product').length || 
+                  currentMonth?.overhead?.filter(position => position.team === 'product').length === 0) && (
+                  <div className="text-center py-4 text-white opacity-50 text-sm border-2 border-dashed border-gray-600 rounded-lg">
+                    No Product Team positions added yet
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Management Team */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-md font-medium text-green-400 flex items-center">
+                  <div className="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                  Management Team
+                </h4>
+                <span className="text-sm text-white opacity-70">
+                  Total: {formatCurrency(getTeamTotal(currentMonthIndex, 'management'))}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {currentMonth?.overhead?.filter(position => position.team === 'management').map((position) => (
+                  <div key={position.id} className="flex items-center space-x-4 p-4 bg-gray-800 rounded-lg border-l-4 border-green-400">
+                    <input
+                      type="text"
+                      value={position.name}
+                      onChange={(e) => updateOverheadPosition(currentMonthIndex, position.id, 'name', e.target.value)}
+                      className="modern-input flex-1"
+                      placeholder="Position name"
+                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={convertFromBase(position.salary || 0).toFixed(2)}
+                        onChange={(e) => {
+                          const newSalary = parseFloat(e.target.value) || 0;
+                          // Convert from current currency to base currency before saving
+                          const salaryInBase = convertToBase(newSalary);
+                          updateOverheadPosition(currentMonthIndex, position.id, 'salary', salaryInBase);
+                        }}
+                        className="modern-input w-32 pr-8"
+                        placeholder="Salary"
+                      />
+                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-white opacity-70">
+                        {currentCurrency}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeOverheadPosition(currentMonthIndex, position.id)}
+                      className="text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))}
+                {(!currentMonth?.overhead?.filter(position => position.team === 'management').length || 
+                  currentMonth?.overhead?.filter(position => position.team === 'management').length === 0) && (
+                  <div className="text-center py-4 text-white opacity-50 text-sm border-2 border-dashed border-gray-600 rounded-lg">
+                    No Management Team positions added yet
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Team Summary */}
+            <div className="mt-4 p-4 bg-gray-800 rounded-lg border border-gray-700">
+              <h5 className="text-sm font-medium text-white mb-3">Team Summary</h5>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="text-blue-400 font-semibold">{formatCurrency(getTeamTotal(currentMonthIndex, 'service'))}</div>
+                  <div className="text-white opacity-70 text-xs">Service Team</div>
                 </div>
-              ))}
+                <div className="text-center">
+                  <div className="text-purple-400 font-semibold">{formatCurrency(getTeamTotal(currentMonthIndex, 'product'))}</div>
+                  <div className="text-white opacity-70 text-xs">Product Team</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-green-400 font-semibold">{formatCurrency(getTeamTotal(currentMonthIndex, 'management'))}</div>
+                  <div className="text-white opacity-70 text-xs">Management Team</div>
+                </div>
+              </div>
             </div>
           </div>
 

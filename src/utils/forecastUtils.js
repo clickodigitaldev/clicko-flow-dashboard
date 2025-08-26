@@ -6,14 +6,7 @@ export const calculateMonthlyExpenses = (settings) => {
   return totalOverhead + totalGeneralExpenses;
 };
 
-export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
+
 
 export const getFinancialSummary = (projects, currentMonth, settings) => {
   // Get current month date for calculations

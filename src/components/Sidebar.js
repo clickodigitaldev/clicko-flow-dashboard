@@ -7,7 +7,8 @@ import {
   BarChart3, 
   Users, 
   FileText, 
-  DollarSign
+  DollarSign,
+  Network
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -31,10 +32,10 @@ const Sidebar = () => {
       children: []
     },
     {
-      id: 'settings',
-      label: 'Settings',
-      icon: <Settings className="w-5 h-5" />,
-      path: '/settings',
+      id: 'org-chart',
+      label: 'Organizational Chart',
+      icon: <Network className="w-5 h-5" />,
+      path: '/org-chart',
       children: []
     },
     {
@@ -63,6 +64,13 @@ const Sidebar = () => {
       label: 'Finance',
       icon: <DollarSign className="w-5 h-5" />,
       path: '/finance',
+      children: []
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: <Settings className="w-5 h-5" />,
+      path: '/settings',
       children: []
     }
   ];

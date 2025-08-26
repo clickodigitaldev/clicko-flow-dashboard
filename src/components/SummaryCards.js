@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, Calendar, Target, TrendingDown, PiggyBank } from 'lucide-react';
+import { useCurrency } from '../contexts/CurrencyContext';
 import monthlyPlanningService from '../services/monthlyPlanningService';
 
 const SummaryCards = ({ projects, currentMonth, settings }) => {
   const [forecastData, setForecastData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { formatCurrency, convertFromBase } = useCurrency();
   
   // Get the actual forecasting data from database
   useEffect(() => {
@@ -19,8 +21,16 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
         const monthData = await monthlyPlanningService.getMonthlyPlanningByMonth(currentMonth);
         console.log('🔍 API response:', monthData);
         
-        if (monthData) {
-          console.log('✅ Got data from database:', monthData);
+        if (monthData && monthData.success && monthData.data) {
+          console.log('✅ Got data from database:', monthData.data);
+          setForecastData(monthData.data);
+        } else if (monthData && monthData.data) {
+          // Handle case where success field might be missing
+          console.log('✅ Got data from database (no success field):', monthData.data);
+          setForecastData(monthData.data);
+        } else if (monthData) {
+          // Handle case where data is directly in monthData
+          console.log('✅ Got data from database (direct):', monthData);
           setForecastData(monthData);
         } else {
           console.log('⚠️ No data from database');
@@ -81,20 +91,25 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
   const forecastOverhead = forecastData?.overhead || [];
   const forecastGeneralExpenses = forecastData?.generalExpenses || [];
   
-  // Calculate totals from forecast data
-  const expectedRevenue = forecastRevenueStreams.reduce((sum, stream) => sum + (stream.amount || 0), 0);
-  const totalOverhead = forecastOverhead.reduce((sum, pos) => sum + (pos.salary || 0), 0);
-  const totalGeneralExpenses = forecastGeneralExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-  const totalExpenses = totalOverhead + totalGeneralExpenses;
+  // Calculate totals from forecast data (these are in base currency)
+  const expectedRevenueInBase = forecastRevenueStreams.reduce((sum, stream) => sum + (stream.amountInBase || stream.amount || 0), 0);
+  const totalOverheadInBase = forecastOverhead.reduce((sum, pos) => sum + (pos.salaryInBase || pos.salary || 0), 0);
+  const totalGeneralExpensesInBase = forecastGeneralExpenses.reduce((sum, exp) => sum + (exp.amountInBase || exp.amount || 0), 0);
+  const totalExpensesInBase = totalOverheadInBase + totalGeneralExpensesInBase;
   
-  // Use project data for deposits (actual received money)
-  const totalDeposits = currentMonthProjects.reduce((sum, p) => sum + p.depositPaid, 0);
+  // Convert to current currency for display
+  const expectedRevenue = convertFromBase(expectedRevenueInBase);
+  const totalOverhead = convertFromBase(totalOverheadInBase);
+  const totalGeneralExpenses = convertFromBase(totalGeneralExpensesInBase);
+  const totalExpenses = convertFromBase(totalExpensesInBase);
   
-  // Expected Payments = remaining payments from projects (Due in this month)
-  const totalExpectedPayments = currentMonthProjects.reduce((sum, p) => sum + (p.totalAmount - p.depositPaid), 0);
+  // Use project data for deposits (actual received money) - convert from base currency
+  const totalDepositsInBase = currentMonthProjects.reduce((sum, p) => sum + (p.depositPaidInBase || p.depositPaid || 0), 0);
+  const totalDeposits = convertFromBase(totalDepositsInBase);
   
-  // Use database target or fallback to default (commented out as not used in current calculation)
-  // const monthlyTarget = settings?.monthlyTarget || 150000;
+  // Expected Payments = remaining payments from projects (Due in this month) - convert from base currency
+  const totalExpectedPaymentsInBase = currentMonthProjects.reduce((sum, p) => sum + ((p.totalAmountInBase || p.totalAmount || 0) - (p.depositPaidInBase || p.depositPaid || 0)), 0);
+  const totalExpectedPayments = convertFromBase(totalExpectedPaymentsInBase);
   
   // Target Achievement = (Deposits received / Expected Revenue from forecast) * 100
   const targetAchievement = expectedRevenue > 0 ? Math.round((totalDeposits / expectedRevenue) * 100) : 0;
@@ -103,7 +118,8 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
   const completedProjects = currentMonthProjects.filter(p => p.status === 'Completed').length;
   const completionRate = totalProjects > 0 ? ((completedProjects / totalProjects) * 100).toFixed(1) : 0;
   
-  const totalProjectValue = currentMonthProjects.reduce((sum, p) => sum + p.totalAmount, 0);
+  const totalProjectValueInBase = currentMonthProjects.reduce((sum, p) => sum + (p.totalAmountInBase || p.totalAmount || 0), 0);
+  const totalProjectValue = convertFromBase(totalProjectValueInBase);
   const depositRate = totalProjectValue > 0 ? ((totalDeposits / totalProjectValue) * 100).toFixed(1) : 0;
 
   // Break-even Status = Deposits received vs Total Expenses
@@ -130,7 +146,7 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
     },
     {
       title: "Deposits Received",
-      value: `$${totalDeposits.toLocaleString()}`,
+      value: `${formatCurrency(totalDeposits)}`,
       icon: <DollarSign className="w-6 h-6" />,
       gradient: "gradient-card-green",
       glow: "glow-green",
@@ -143,7 +159,7 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
     },
     {
       title: "Due in this Month",
-      value: `$${totalExpectedPayments.toLocaleString()}`,
+      value: `${formatCurrency(totalExpectedPayments)}`,
       icon: <TrendingUp className="w-6 h-6" />,
       gradient: "gradient-card-purple",
       glow: "glow-purple",
@@ -165,7 +181,7 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
       showProgress: true,
       progressValue: Math.min(100, parseFloat(targetAchievement)),
       progressLabel: "Target Progress",
-      subtitle: parseFloat(targetAchievement) >= 100 ? "Target exceeded!" : `${targetAchievement}% of $${(expectedRevenue/1000).toFixed(0)}K`
+      subtitle: parseFloat(targetAchievement) >= 100 ? "Target exceeded!" : `${targetAchievement}% of ${formatCurrency(expectedRevenue)}`
     },
     {
       title: "Break-even Status",
@@ -178,11 +194,11 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
       showProgress: true,
       progressValue: Math.min(100, parseFloat(breakEvenPercentage)),
       progressLabel: "Break-even Progress",
-      subtitle: `${breakEvenPercentage}% of $${(totalExpenses/1000).toFixed(0)}K expenses`
+      subtitle: `${breakEvenPercentage}% of ${formatCurrency(totalExpenses)}`
     },
     {
       title: "Estimated Profit",
-      value: `$${estimatedProfit.toLocaleString()}`,
+      value: `${formatCurrency(estimatedProfit)}`,
       icon: <PiggyBank className="w-6 h-6" />,
       gradient: isProfitPositive ? "gradient-card-green" : "gradient-card-orange",
       glow: isProfitPositive ? "glow-green" : "glow-orange",

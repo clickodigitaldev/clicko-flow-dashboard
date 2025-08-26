@@ -41,13 +41,9 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date
   },
-  salesmateApiKey: {
-    type: String,
-    trim: true
-  },
-  salesmateBaseUrl: {
-    type: String,
-    default: 'https://api.salesmate.io'
+  settings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   }
 }, {
   timestamps: true

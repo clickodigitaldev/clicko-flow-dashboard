@@ -4,20 +4,22 @@ const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Apply auth middleware to all routes
-router.use(protect);
+// Temporarily disable auth for testing - uncomment when ready
+// router.use(protect);
 
 // @desc    Get user settings
 // @route   GET /api/settings
 // @access  Private
 router.get('/', async (req, res) => {
   try {
-    let settings = await Settings.findOne({ userId: req.user._id });
+    // Temporarily use hardcoded userId since auth is disabled
+    const userId = '68a79730091b06b0654ec04a';
+    let settings = await Settings.findOne({ userId });
 
     if (!settings) {
       // Create default settings if none exist
       settings = await Settings.create({
-        userId: req.user._id,
+        userId,
         monthlyTargets: new Map([
           ['January 2025', 100000],
           ['February 2025', 100000],

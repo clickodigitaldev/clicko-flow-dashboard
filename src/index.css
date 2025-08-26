@@ -46,6 +46,8 @@ code {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.12);
+  z-index: 10;
+  position: relative;
 }
 
 /* Animated Widget Styles */
@@ -429,16 +431,50 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Apply gradient backgrounds to icon containers */
+.icon-container.gradient-card-blue {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.icon-container.gradient-card-green {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.icon-container.gradient-card-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+}
+
+.icon-container.gradient-card-orange {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.icon-container.gradient-card-cyan {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+}
+
+.icon-container.gradient-card-pink {
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+}
+
+.icon-container.gradient-card-red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.icon-container.gradient-card-yellow {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
 .icon-container:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
 
 /* Animated Elements */
@@ -846,6 +882,125 @@ code {
   backdrop-filter: blur(20px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 40 !important;
+}
+
+/* Ensure main content doesn't overlap with sidebar */
+.flex-1 {
+  margin-left: 0 !important;
+}
+
+/* Remove the problematic media query that was causing left padding */
+/* @media (min-width: 1024px) {
+    .flex-1 {
+      margin-left: 16rem !important;
+    }
+} */
+
+/* Status styling for member boxes */
+.status-hiring {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+  position: relative !important;
+  animation: background-pulse-green 2s ease-in-out infinite;
+}
+
+.status-hiring::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #22c55e, #16a34a, #22c55e);
+  border-radius: 14px;
+  z-index: -1;
+  animation: border-glow-green 2s ease-in-out infinite;
+}
+
+.status-warning {
+  background: rgba(234, 179, 8, 0.15) !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+  position: relative !important;
+  animation: background-pulse-yellow 2s ease-in-out infinite;
+}
+
+.status-warning::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #eab308, #ca8a04, #eab308);
+  border-radius: 14px;
+  z-index: -1;
+  animation: border-glow-yellow 2s ease-in-out infinite;
+}
+
+@keyframes background-pulse-green {
+  0%, 100% {
+    background: rgba(34, 197, 94, 0.15) !important;
+  }
+  50% {
+    background: rgba(34, 197, 94, 0.25) !important;
+  }
+}
+
+@keyframes background-pulse-yellow {
+  0%, 100% {
+    background: rgba(234, 179, 8, 0.15) !important;
+  }
+  50% {
+    background: rgba(234, 179, 8, 0.25) !important;
+  }
+}
+
+
+
+.status-active {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+  position: relative !important;
+}
+
+.status-active::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #3b82f6, #2563eb, #3b82f6);
+  border-radius: 14px;
+  z-index: -1;
+}
+
+@keyframes border-glow-green {
+  0%, 100% { 
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  }
+  50% { 
+    opacity: 0.8;
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+  }
+}
+
+@keyframes border-glow-yellow {
+  0%, 100% { 
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.6);
+  }
+  50% { 
+    opacity: 0.8;
+    box-shadow: 0 0 4px rgba(234, 179, 8, 0.4);
+  }
 }
 
 /* Glass card hover effects */
@@ -893,6 +1048,22 @@ code {
   outline: none !important;
 }
 
+/* Ensure left padding works properly for input fields with icons */
+.modern-input.pl-12 {
+  padding-left: 3rem !important;
+}
+
+/* Additional specificity for input fields with icons */
+input.modern-input.pl-12 {
+  padding-left: 3rem !important;
+}
+
+/* Ensure icon positioning works correctly */
+.modern-input + .relative svg,
+.relative .modern-input + svg {
+  pointer-events: none;
+}
+
 .modern-input:focus {
   border-color: rgba(59, 130, 246, 0.5) !important;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
@@ -918,4 +1089,604 @@ textarea.modern-input {
 textarea.modern-input:focus {
   border-color: rgba(147, 51, 234, 0.5) !important;
   box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1) !important;
+}
+
+/* Modern Select Fields */
+.modern-select {
+  @apply w-full px-4 py-2 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+}
+
+.modern-select option {
+  @apply bg-gray-800 text-white;
+}
+
+/* Search Input Specific Styling */
+.search-input {
+  @apply w-full px-4 py-2 pl-12 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+}
+
+.search-input:focus {
+  @apply bg-white bg-opacity-15;
+}
+
+/* Filter Selects Styling */
+.filter-select {
+  @apply px-4 py-2 bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 min-w-[120px];
+}
+
+.filter-select option {
+  @apply bg-gray-800 text-white;
+}
+
+/* Action Menu Styling */
+.action-menu {
+  position: absolute !important;
+  right: 0 !important;
+  top: 100% !important;
+  margin-top: 0.5rem !important;
+  width: 13rem !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  z-index: 99999 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  pointer-events: auto !important;
+  overflow: hidden !important;
+  animation: slideInUp 0.2s ease-out !important;
+  transform-origin: top right !important;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.action-menu button {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  text-align: left !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.875rem !important;
+  color: white !important;
+  transition: all 0.2s ease-in-out !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  border-radius: 0 !important;
+}
+
+.action-menu button:hover {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  transform: translateX(4px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+.action-menu button:active {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+  transform: translateX(2px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.action-menu button:first-child {
+  border-top-left-radius: 16px !important;
+  border-top-right-radius: 16px !important;
+}
+
+.action-menu button:last-child {
+  border-bottom-left-radius: 16px !important;
+  border-bottom-right-radius: 16px !important;
+}
+
+.action-menu .border-t {
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+  margin: 0.5rem 0 !important;
+}
+
+/* Action Menu Icon Containers */
+.action-menu .icon-container {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-right: 12px !important;
+  transition: all 0.2s ease-in-out !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.action-menu .icon-container::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+  z-index: -1 !important;
+}
+
+.action-menu button:hover .icon-container {
+  transform: scale(1.15) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3)) !important;
+}
+
+/* Enhanced icon visibility */
+.action-menu .icon-container svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) !important;
+  stroke-width: 2.5 !important;
+}
+
+.action-menu button:hover .icon-container svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) !important;
+}
+
+/* Action menu button text enhancement */
+.action-menu button span {
+  font-weight: 500 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  letter-spacing: 0.025em !important;
+}
+
+/* Action menu separator enhancement */
+.action-menu .border-t {
+  border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+  margin: 0.75rem 0 !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Currency Switcher Styles */
+.currency-switcher {
+  min-width: 120px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.currency-switcher button {
+  min-width: 120px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.currency-switcher .dropdown {
+  min-width: 256px; /* w-64 = 16rem = 256px */
+  max-width: 300px;
+  overflow: hidden;
+}
+
+.currency-switcher .dropdown button {
+  min-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+/* Ensure currency switcher doesn't get squashed in headers */
+.modern-header .currency-switcher {
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.modern-header .currency-switcher button {
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+/* Fix dropdown positioning and overflow */
+.currency-switcher .dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 0.5rem;
+  z-index: 9999;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.5rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  background: rgba(17, 24, 39, 0.95);
+}
+
+/* Ensure proper text wrapping in dropdown items */
+.currency-switcher .dropdown button span {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.currency-switcher .dropdown button div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ReactFlow Custom Styles */
+.react-flow__node {
+  font-family: inherit;
+}
+
+.react-flow__controls {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.react-flow__controls button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease !important;
+}
+
+.react-flow__controls button:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.05) !important;
+}
+
+.react-flow__minimap {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.1) !important;
+}
+
+.react-flow__minimap-node {
+  fill: #4c51bf !important;
+  stroke: #4c51bf !important;
+}
+
+.react-flow__background {
+  background-color: transparent !important;
+}
+
+.react-flow__background-pattern {
+  color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.react-flow__edge-path {
+  stroke: #4c51bf !important;
+  stroke-width: 2 !important;
+}
+
+.react-flow__edge-marker {
+  fill: #4c51bf !important;
+}
+
+.react-flow__attribution {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+}
+
+.react-flow__attribution a {
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-decoration: none !important;
+}
+
+.react-flow__attribution a:hover {
+  text-decoration: underline !important;
+}
+
+/* Custom scrollbar for the flow container */
+.react-flow__viewport {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.react-flow__viewport::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.react-flow__viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.react-flow__viewport::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.react-flow__viewport::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Org Chart Styles */
+.org-chart-container {
+  position: relative;
+  min-height: 600px;
+  padding: 2rem 0;
+  margin: 0 auto;
+  max-width: 100%;
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Ensure org chart content is properly spaced */
+.org-chart-container .flex.space-x-12 {
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3rem;
+}
+
+.org-chart-container .flex.space-x-12 > div {
+  flex: 0 0 auto;
+  min-width: 250px;
+}
+
+.org-chart-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 70%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.01) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.01) 75%);
+  background-size: 100px 100px, 20px 20px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.org-chart-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Connection lines */
+.org-chart-connection {
+  position: absolute;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+  border-radius: 2px;
+  z-index: 0;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.org-chart-connection.vertical {
+  width: 3px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
+}
+
+.org-chart-connection.horizontal {
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
+}
+
+/* Team connection lines */
+.org-chart-team-connections {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.org-chart-team-connection {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+  border-radius: 1px;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+/* Node hover effects */
+.org-chart-node {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.org-chart-node:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Action buttons animation */
+.org-chart-actions {
+  transition: all 0.2s ease;
+}
+
+.org-chart-actions button {
+  transition: all 0.15s ease;
+}
+
+.org-chart-actions button:hover {
+  transform: scale(1.1);
+}
+
+/* Image upload styling */
+.image-upload-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.image-upload-container input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.image-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 50%;
+}
+
+.image-upload-container:hover .image-upload-overlay {
+  opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .org-chart-container {
+    padding: 1rem;
+  }
+  
+  .org-chart-container > div {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .org-chart-container .flex.space-x-12 {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .content-with-sidebar {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .sidebar-fixed {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar-fixed.open {
+    transform: translateX(0);
+  }
+}
+
+/* Ensure proper spacing with sidebar */
+@media (min-width: 769px) {
+  .org-chart-container {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* Prevent overlap with fixed elements */
+.org-chart-container {
+  z-index: 1;
+}
+
+.org-chart-container * {
+  z-index: 1;
+}
+
+/* Glassmorphism enhancements */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Modern input styling */
+.modern-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.modern-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+/* Button enhancements */
+.btn-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* Animation keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

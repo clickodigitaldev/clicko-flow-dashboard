@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useCurrency } from '../contexts/CurrencyContext';
 import monthlyPlanningService from '../services/monthlyPlanningService';
 
 const Charts = ({ projects, currentMonth, financialSummary }) => {
   const [monthlyData, setMonthlyData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { formatCurrency, convertFromBase } = useCurrency();
 
   // Generate 12 months array
   const generateMonths = () => {
@@ -30,17 +32,26 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
           try {
             const monthData = await monthlyPlanningService.getMonthlyPlanningByMonth(month);
             
-            // Calculate expected revenue as sum of all revenue streams for this month
-            const expectedRevenue = monthData?.revenueStreams?.reduce((sum, stream) => sum + (stream.amount || 0), 0) || 0;
+            // Handle the nested data structure from the API
+            const actualData = monthData?.data || monthData;
             
-            // Calculate actual revenue for this month (same logic as homepage widgets)
+            // Calculate expected revenue as sum of all revenue streams for this month (in base currency)
+            const expectedRevenueInBase = actualData?.revenueStreams?.reduce((sum, stream) => sum + (stream.amountInBase || stream.amount || 0), 0) || 0;
+            
+            // Convert to current currency for display
+            const expectedRevenue = convertFromBase(expectedRevenueInBase);
+            
+            // Calculate actual revenue for this month (same logic as homepage widgets) - convert from base currency
             const monthProjects = projects.filter(p => p.monthOfPayment === month);
-            const depositsReceived = monthProjects.reduce((sum, p) => sum + p.depositPaid, 0);
-            const duePayments = monthProjects.reduce((sum, p) => sum + (p.totalAmount - p.depositPaid), 0);
+            const depositsReceivedInBase = monthProjects.reduce((sum, p) => sum + (p.depositPaidInBase || p.depositPaid || 0), 0);
+            const duePaymentsInBase = monthProjects.reduce((sum, p) => sum + ((p.totalAmountInBase || p.totalAmount || 0) - (p.depositPaidInBase || p.depositPaid || 0)), 0);
+            
+            const depositsReceived = convertFromBase(depositsReceivedInBase);
+            const duePayments = convertFromBase(duePaymentsInBase);
             const actualRevenue = depositsReceived + duePayments;
 
-            console.log(`📊 ${month} - Expected Revenue (Revenue Streams Sum): $${expectedRevenue.toLocaleString()}`);
-            console.log(`📊 ${month} - Actual Revenue (Projects): $${actualRevenue.toLocaleString()}`);
+            console.log(`📊 ${month} - Expected Revenue (Revenue Streams Sum): ${formatCurrency(expectedRevenue)}`);
+            console.log(`📊 ${month} - Actual Revenue (Projects): ${formatCurrency(actualRevenue)}`);
 
             allData.push({
               month: month,
@@ -51,10 +62,13 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
             });
           } catch (error) {
             console.log(`No forecast data for ${month}, using defaults`);
-            // Calculate actual revenue even if no forecast data (same logic as homepage widgets)
+            // Calculate actual revenue even if no forecast data (same logic as homepage widgets) - convert from base currency
             const monthProjects = projects.filter(p => p.monthOfPayment === month);
-            const depositsReceived = monthProjects.reduce((sum, p) => sum + p.depositPaid, 0);
-            const duePayments = monthProjects.reduce((sum, p) => sum + (p.totalAmount - p.depositPaid), 0);
+            const depositsReceivedInBase = monthProjects.reduce((sum, p) => sum + (p.depositPaidInBase || p.depositPaid || 0), 0);
+            const duePaymentsInBase = monthProjects.reduce((sum, p) => sum + ((p.totalAmountInBase || p.totalAmount || 0) - (p.depositPaidInBase || p.depositPaid || 0)), 0);
+            
+            const depositsReceived = convertFromBase(depositsReceivedInBase);
+            const duePayments = convertFromBase(duePaymentsInBase);
             const actualRevenue = depositsReceived + duePayments;
 
             allData.push({
@@ -80,14 +94,14 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
     };
 
     fetchAllMonthlyData();
-  }, [currentMonth, projects]);
+  }, [currentMonth, projects, convertFromBase, formatCurrency]);
 
-  // Calculate project status data (current month only)
-  const currentMonthProjects = projects.filter(p => p.monthOfPayment === currentMonth);
+  // Calculate project status data (all projects)
   const projectStatusData = [
-    { name: 'Completed', value: currentMonthProjects.filter(p => p.status === 'Completed').length, color: '#10b981' },
-    { name: 'In Progress', value: currentMonthProjects.filter(p => p.status === 'In Progress').length, color: '#3b82f6' },
-    { name: 'Pending', value: currentMonthProjects.filter(p => p.status === 'Pending').length, color: '#f59e0b' }
+    { name: 'Completed', value: projects.filter(p => p.status === 'Completed').length, color: '#10b981' },
+    { name: 'In Progress', value: projects.filter(p => p.status === 'In Progress').length, color: '#3b82f6' },
+    { name: 'Pending', value: projects.filter(p => p.status === 'Pending').length, color: '#f59e0b' },
+    { name: 'On Hold', value: projects.filter(p => p.status === 'On Hold').length, color: '#ef4444' }
   ];
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -97,7 +111,7 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
           <p className="text-white font-medium mb-2">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: ${entry.value?.toLocaleString() || entry.value}
+              {entry.name}: {formatCurrency(entry.value || 0)}
             </p>
           ))}
         </div>
@@ -124,18 +138,14 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Monthly Revenue vs Target - 12 Months */}
-      <div className="glass-card glass-card-hover p-6 animate-fade-in-up lg:col-span-2">
+      <div className="glass-card glass-card-hover p-6 animate-fade-in-up">
         <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-          <div className="w-2 h-8 bg-gradient-to-b from-cyan-400 to-blue-600 rounded mr-3"></div>
+          <div className="w-2 h-8 bg-gradient-to-b from-blue-400 to-blue-600 rounded mr-3"></div>
           Monthly Revenue vs Target (12 Months)
         </h3>
-        <div className="mb-4 text-sm text-gray-300">
-          <p><strong>Expected Revenue:</strong> Sum of all revenue streams for each month</p>
-          <p><strong>Actual Revenue:</strong> Deposits received + Due payments for each month</p>
-        </div>
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={350}>
           <BarChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
             <XAxis 
@@ -149,7 +159,7 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
             <YAxis 
               stroke="rgba(255,255,255,0.8)"
               fontSize={12}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value) => `${formatCurrency(value).replace(/[^\d]/g, '')}k`}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
@@ -163,17 +173,17 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
       <div className="glass-card glass-card-hover p-6 animate-fade-in-up">
         <h3 className="text-xl font-bold text-white mb-6 flex items-center">
           <div className="w-2 h-8 bg-gradient-to-b from-green-400 to-emerald-600 rounded mr-3"></div>
-          Project Status ({currentMonth})
+          Project Status (All Projects)
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={350}>
           <PieChart>
             <Pie
               data={projectStatusData}
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              outerRadius={80}
+              label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+              outerRadius={100}
               fill="#8884d8"
               dataKey="value"
             >

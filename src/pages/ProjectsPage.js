@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, 
-  Search, 
   DollarSign,
   Users,
   Clock,
   CheckCircle
 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
+import CurrencySwitcher from '../components/CurrencySwitcher';
 import AddProjectModal from '../components/AddProjectModal';
 import ProjectsTable from '../components/ProjectsTable';
 import { projectCategories, projectStatuses, projectPriorities } from '../utils/constants';
 import projectService from '../services/projectService';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 const ProjectsPage = () => {
+  const { formatCurrency, convertFromBase } = useCurrency();
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('');
@@ -26,11 +27,14 @@ const ProjectsPage = () => {
 
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
-  // Calculate statistics
+  // Calculate statistics with currency conversion
   const totalProjects = projects.length;
   const completedProjects = projects.filter(p => p.status === 'Completed').length;
   const inProgressProjects = projects.filter(p => p.status === 'In Progress').length;
-  const totalRevenue = projects.reduce((sum, p) => sum + p.totalAmount, 0);
+  
+  // Convert total revenue from base currency to current currency
+  const totalRevenueInBase = projects.reduce((sum, p) => sum + (p.totalAmountInBase || p.totalAmount || 0), 0);
+  const totalRevenue = convertFromBase(totalRevenueInBase);
 
   // Load projects from database
   useEffect(() => {
@@ -64,15 +68,6 @@ const ProjectsPage = () => {
   useEffect(() => {
     let filtered = projects;
 
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(project =>
-        project.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
     // Apply category filter
     if (selectedCategory) {
       filtered = filtered.filter(project => project.category === selectedCategory);
@@ -89,7 +84,7 @@ const ProjectsPage = () => {
     }
 
     setFilteredProjects(filtered);
-  }, [projects, searchTerm, selectedCategory, selectedStatus, selectedPriority]);
+  }, [projects, selectedCategory, selectedStatus, selectedPriority]);
 
   const showNotification = (message, type = 'success') => {
     setNotification({ show: true, message, type });
@@ -99,20 +94,20 @@ const ProjectsPage = () => {
   const handleAddProject = async (newProject) => {
     try {
       const projectData = {
-        ...newProject,
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0],
-        progress: 0,
-        milestones: []
-      };
+      ...newProject,
+      createdAt: new Date().toISOString().split('T')[0],
+      updatedAt: new Date().toISOString().split('T')[0],
+      progress: 0,
+      milestones: []
+    };
 
       // Save to database
       const savedProject = await projectService.createProject(projectData);
       
       // Add to local state
       setProjects([...projects, savedProject]);
-      setShowAddModal(false);
-      showNotification('Project added successfully!');
+    setShowAddModal(false);
+    showNotification('Project added successfully!');
     } catch (error) {
       console.error('Error adding project:', error);
       showNotification('Failed to add project: ' + error.message, 'error');
@@ -125,12 +120,12 @@ const ProjectsPage = () => {
     try {
       if (updatedProject === null) {
         // Project was deleted
-        setProjects(projects.filter(p => p.id !== projectId));
-        showNotification('Project deleted successfully!');
+        setProjects(projects.filter(p => p.projectId !== projectId));
+      showNotification('Project deleted successfully!');
       } else {
         // Project was updated
         const updatedProjectFromDB = await projectService.updateProject(projectId, updatedProject);
-        setProjects(projects.map(p => p.id === projectId ? updatedProjectFromDB : p));
+        setProjects(projects.map(p => p.projectId === projectId ? updatedProjectFromDB : p));
         showNotification('Project updated successfully!');
       }
     } catch (error) {
@@ -154,6 +149,7 @@ const ProjectsPage = () => {
                 <p className="text-sm text-secondary">Manage all your projects and track progress</p>
               </div>
               <div className="flex items-center space-x-4">
+                <CurrencySwitcher />
                 <button
                   onClick={() => setShowAddModal(true)}
                   className="modern-button flex items-center"
@@ -210,7 +206,7 @@ const ProjectsPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-secondary">Total Revenue</p>
-                  <p className="text-2xl font-bold text-primary">${totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</p>
                 </div>
                 <div className="icon-container">
                   <DollarSign className="w-5 h-5 text-green-400" />
@@ -221,21 +217,7 @@ const ProjectsPage = () => {
 
           {/* Filters */}
           <div className="enhanced-card p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">Search</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-secondary" />
-                  <input
-                    type="text"
-                    placeholder="Search projects..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="modern-input pl-10 w-full"
-                  />
-                </div>
-              </div>
-              
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-secondary mb-2">Category</label>
                 <select
@@ -278,15 +260,15 @@ const ProjectsPage = () => {
                 </select>
               </div>
               
-              <div className="flex items-end">
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">Actions</label>
                 <button
                   onClick={() => {
-                    setSearchTerm('');
                     setSelectedCategory('');
                     setSelectedStatus('');
                     setSelectedPriority('');
                   }}
-                  className="modern-button-secondary w-full"
+                  className="modern-select w-full text-center cursor-pointer hover:bg-white hover:bg-opacity-10 transition-all duration-200"
                 >
                   Clear Filters
                 </button>
@@ -299,19 +281,21 @@ const ProjectsPage = () => {
             <div className="glass-card p-6 text-center">
               <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-white">Loading projects...</p>
-            </div>
+                        </div>
           ) : error ? (
             <div className="glass-card p-6 text-center">
               <p className="text-red-400 text-lg font-semibold">Error: {error}</p>
               <p className="text-white text-sm mt-2">Using fallback data</p>
             </div>
           ) : (
-            <ProjectsTable
-              projects={filteredProjects}
-              onUpdateProject={handleUpdateProject}
-              activeFilter={null}
-              currentMonth="August 2025"
-            />
+            <div className="glass-card">
+              <ProjectsTable
+                projects={filteredProjects}
+                onUpdateProject={handleUpdateProject}
+                activeFilter={null}
+                currentMonth={null}
+              />
+            </div>
           )}
         </main>
       </div>

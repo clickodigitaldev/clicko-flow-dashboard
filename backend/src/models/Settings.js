@@ -93,35 +93,9 @@ const settingsSchema = new mongoose.Schema({
   },
   // Notification settings
   notifications: {
-    emailAlerts: {
-      type: Boolean,
-      default: true
-    },
-    paymentReminders: {
-      type: Boolean,
-      default: true
-    },
-    projectDeadlines: {
-      type: Boolean,
-      default: true
-    },
-    weeklyReports: {
-      type: Boolean,
-      default: false
-    }
-  },
-  // Salesmate integration settings
-  salesmateSettings: {
-    autoCreateProjects: {
-      type: Boolean,
-      default: true
-    },
-    syncFrequency: {
-      type: String,
-      enum: ['hourly', 'daily', 'weekly'],
-      default: 'daily'
-    },
-    lastSync: Date
+    email: { type: Boolean, default: true },
+    push: { type: Boolean, default: true },
+    sms: { type: Boolean, default: false }
   }
 }, {
   timestamps: true

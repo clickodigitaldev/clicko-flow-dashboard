@@ -58,6 +58,31 @@ class MonthlyPlanningService {
         throw new Error('Invalid month format');
       }
 
+      // Process currency fields for overhead positions
+      const processedOverhead = (overhead || []).map(position => ({
+        name: position.name || '',
+        salary: position.salary || 0,
+        team: position.team || 'service',
+        salaryCurrency: 'AED', // Default to AED as base currency
+        salaryInBase: position.salary || 0 // Store in base currency
+      }));
+
+      // Process currency fields for general expenses
+      const processedGeneralExpenses = (generalExpenses || []).map(expense => ({
+        name: expense.name || '',
+        amount: expense.amount || 0,
+        amountCurrency: 'AED', // Default to AED as base currency
+        amountInBase: expense.amount || 0 // Store in base currency
+      }));
+
+      // Process currency fields for revenue streams
+      const processedRevenueStreams = (revenueStreams || []).map(stream => ({
+        name: stream.name || '',
+        amount: stream.amount || 0,
+        amountCurrency: 'AED', // Default to AED as base currency
+        amountInBase: stream.amount || 0 // Store in base currency
+      }));
+
       // Check if monthly planning already exists for this month
       let monthlyPlanning = await MonthlyPlanning.findOne({
         userId,
@@ -67,10 +92,14 @@ class MonthlyPlanningService {
       if (monthlyPlanning) {
         // Update existing monthly planning
         monthlyPlanning.revenue = revenue || 0;
-        monthlyPlanning.overhead = overhead || [];
-        monthlyPlanning.generalExpenses = generalExpenses || [];
-        monthlyPlanning.revenueStreams = revenueStreams || [];
+        monthlyPlanning.revenueCurrency = 'AED';
+        monthlyPlanning.revenueInBase = revenue || 0;
+        monthlyPlanning.overhead = processedOverhead;
+        monthlyPlanning.generalExpenses = processedGeneralExpenses;
+        monthlyPlanning.revenueStreams = processedRevenueStreams;
         monthlyPlanning.breakEven = breakEven || 0;
+        monthlyPlanning.breakEvenCurrency = 'AED';
+        monthlyPlanning.breakEvenInBase = breakEven || 0;
         monthlyPlanning.notes = notes || '';
         monthlyPlanning.monthDate = monthDate.toDate();
       } else {
@@ -80,10 +109,14 @@ class MonthlyPlanningService {
           month: month,
           monthDate: monthDate.toDate(),
           revenue: revenue || 0,
-          overhead: overhead || [],
-          generalExpenses: generalExpenses || [],
-          revenueStreams: revenueStreams || [],
+          revenueCurrency: 'AED',
+          revenueInBase: revenue || 0,
+          overhead: processedOverhead,
+          generalExpenses: processedGeneralExpenses,
+          revenueStreams: processedRevenueStreams,
           breakEven: breakEven || 0,
+          breakEvenCurrency: 'AED',
+          breakEvenInBase: breakEven || 0,
           notes: notes || ''
         });
       }
