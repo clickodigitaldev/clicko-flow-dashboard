@@ -227,6 +227,10 @@ mongoose.connect(MONGODB_URI)
       const sampleMonthlyPlanning = new MonthlyPlanning({
         userId: '68a79730091b06b0654ec04a',
         month: 'August 2025',
+        monthDate: new Date('2025-08-01'),
+        revenue: 100000,
+        revenueCurrency: 'AED',
+        revenueInBase: 100000,
         revenueStreams: [
           {
             name: 'Web Development',
@@ -241,18 +245,20 @@ mongoose.connect(MONGODB_URI)
             amountInBase: 20000
           }
         ],
-        overheadExpenses: [
+        overhead: [
           {
             name: 'Developer Salary',
-            amount: 15000,
-            amountCurrency: 'AED',
-            amountInBase: 15000
+            salary: 15000,
+            salaryCurrency: 'AED',
+            salaryInBase: 15000,
+            team: 'product'
           },
           {
             name: 'Office Rent',
-            amount: 8000,
-            amountCurrency: 'AED',
-            amountInBase: 8000
+            salary: 8000,
+            salaryCurrency: 'AED',
+            salaryInBase: 8000,
+            team: 'management'
           }
         ],
         generalExpenses: [
@@ -268,7 +274,10 @@ mongoose.connect(MONGODB_URI)
             amountCurrency: 'AED',
             amountInBase: 3000
           }
-        ]
+        ],
+        breakEven: 25000,
+        breakEvenCurrency: 'AED',
+        breakEvenInBase: 25000
       });
       await sampleMonthlyPlanning.save();
       console.log('✅ Sample monthly planning created');
