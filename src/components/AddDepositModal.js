@@ -230,7 +230,6 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
           </form>
         </div>
       </div>
-    </div>
   );
 };
 

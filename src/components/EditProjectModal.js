@@ -479,7 +479,6 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
           </div>
         </form>
       </div>
-    </div>
   );
 };
 
