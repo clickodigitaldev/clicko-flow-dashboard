@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://clicko-flow-api.onrender.com/api';
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://clicko-flow-dashboard-production-7c2e.up.railway.app/api'
+  : 'http://localhost:5001/api';
 
 class MonthlyPlanningService {
   constructor() {
