@@ -417,8 +417,8 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                         <MoreVertical className="w-4 h-4" />
                       </button>
                       
-                                              {activeActionMenu === project.projectId && (
-                          <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-black bg-opacity-98 backdrop-blur-md border border-white border-opacity-50 shadow-2xl rounded-lg">
+                      {activeActionMenu === project.projectId && (
+                        <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-black bg-opacity-95 backdrop-blur-xl border border-white border-opacity-40 shadow-2xl rounded-lg">
                           <div className="py-2">
                             <button
                               onClick={() => handleActionClick('check-status', project)}
@@ -533,8 +533,9 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
       {/* Modals - Outside main container for proper overlay rendering */}
       
       {editModalOpen && selectedProject && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"></div>
+          <div className="relative z-10 w-full max-w-4xl mx-4">
             <EditProjectModal
               project={selectedProject}
               isOpen={editModalOpen}
@@ -549,8 +550,9 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
       )}
       
       {addDepositModalOpen && selectedProjectForDeposit && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"></div>
+          <div className="relative z-10 w-full max-w-2xl mx-4">
             <AddDepositModal
               project={selectedProjectForDeposit}
               isOpen={addDepositModalOpen}

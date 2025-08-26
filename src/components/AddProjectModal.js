@@ -77,10 +77,10 @@ const AddProjectModal = ({ isOpen, onClose, onSave }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="glass-card w-full max-w-6xl h-[90vh] flex flex-col">
-        {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-6 border-b border-white border-opacity-20 flex-shrink-0">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="glass-card w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-white border-opacity-20">
           <h2 className="text-xl font-bold text-primary">Add New Project</h2>
           <button
             onClick={onClose}
@@ -90,9 +90,8 @@ const AddProjectModal = ({ isOpen, onClose, onSave }) => {
           </button>
         </div>
 
-        {/* Form - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6 space-y-8">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-8">
           {/* Basic Information */}
           <div>
             <h3 className="text-lg font-semibold text-primary mb-4 flex items-center">
@@ -378,7 +377,6 @@ const AddProjectModal = ({ isOpen, onClose, onSave }) => {
             </button>
           </div>
         </form>
-        </div>
       </div>
     </div>
   );
