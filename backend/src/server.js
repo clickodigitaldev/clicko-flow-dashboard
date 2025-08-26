@@ -90,6 +90,7 @@ mongoose.connect(MONGODB_URI)
     if (!existingOrgChart) {
       console.log('📊 Creating default org chart...');
       const defaultOrgChart = new OrgChart({
+        userId: '68a79730091b06b0654ec04a',
         ceo: {
           name: 'John Doe',
           position: 'CEO',
@@ -104,6 +105,7 @@ mongoose.connect(MONGODB_URI)
           {
             name: 'Product Team',
             description: 'Product development and management',
+            role: 'Product Development',
             members: [
               {
                 name: 'Alice Johnson',
@@ -132,6 +134,7 @@ mongoose.connect(MONGODB_URI)
           {
             name: 'Service Team',
             description: 'Customer service and support',
+            role: 'Customer Service',
             members: [
               {
                 name: 'Carol Davis',
@@ -149,6 +152,7 @@ mongoose.connect(MONGODB_URI)
           {
             name: 'Management Team',
             description: 'Business operations and management',
+            role: 'Business Operations',
             members: [
               {
                 name: 'David Wilson',
