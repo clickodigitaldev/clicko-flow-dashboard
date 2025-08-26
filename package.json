@@ -21,7 +21,7 @@
     "build": "DISABLE_ESLINT_PLUGIN=true CI=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "start:prod": "cd backend && npm install && npm start & cd .. && npm run build && npx serve -s build -l $PORT",
+    "start:prod": "npm run build && cd backend && npm install && npm start",
     "dev": "concurrently \"cd backend && npm start\" \"npm start\"",
     "install:all": "npm install && cd backend && npm install"
   },
