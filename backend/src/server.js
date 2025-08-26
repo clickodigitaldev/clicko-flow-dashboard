@@ -12,6 +12,7 @@ const settingsRoutes = require('./routes/settings');
 const forecastRoutes = require('./routes/forecast');
 const monthlyPlanningRoutes = require('./routes/monthlyPlanning');
 const orgChartRoutes = require('./routes/orgChart');
+const webhookRoutes = require('./routes/webhooks');
 
 const app = express();
 
@@ -297,6 +298,7 @@ app.use('/api/monthly-planning', monthlyPlanningRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/forecast', forecastRoutes);
 app.use('/api/org-chart', orgChartRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

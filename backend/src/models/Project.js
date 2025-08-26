@@ -93,6 +93,20 @@ const projectSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Salesmate integration fields
+  salesmateDealId: {
+    type: String,
+    trim: true
+  },
+  salesmateDealValue: {
+    type: String,
+    trim: true
+  },
+  // Nifty integration fields
+  niftyProjectId: {
+    type: String,
+    trim: true
+  },
   // Payment tracking with currency support
   paymentHistory: [{
     amount: {
