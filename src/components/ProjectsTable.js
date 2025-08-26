@@ -418,7 +418,7 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                       </button>
                       
                       {activeActionMenu === project.projectId && (
-                        <div className="action-menu glass-card border border-white border-opacity-30 backdrop-blur-md bg-black bg-opacity-80 shadow-2xl">
+                        <div className="action-menu absolute right-0 top-full mt-2 w-64 z-50 glass-card border border-white border-opacity-30 backdrop-blur-md bg-black bg-opacity-90 shadow-2xl rounded-lg">
                           <div className="py-2">
                             <button
                               onClick={() => handleActionClick('check-status', project)}
@@ -533,9 +533,8 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
       {/* Modals - Outside main container for proper overlay rendering */}
       
       {editModalOpen && selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-          <div className="relative z-10">
+        <div className="modal-overlay">
+          <div className="modal-content">
             <EditProjectModal
               project={selectedProject}
               isOpen={editModalOpen}
@@ -550,9 +549,8 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
       )}
       
       {addDepositModalOpen && selectedProjectForDeposit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-          <div className="relative z-10">
+        <div className="modal-overlay">
+          <div className="modal-content">
             <AddDepositModal
               project={selectedProjectForDeposit}
               isOpen={addDepositModalOpen}
