@@ -397,10 +397,10 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                       <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
                         <div 
                           className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full" 
-                          style={{ width: `${project.progress || 0}%` }}
+                          style={{ width: `${Math.round(project.progress || 0)}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm text-secondary">{project.progress || 0}%</span>
+                      <span className="text-sm text-secondary">{Math.round(project.progress || 0)}%</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -418,7 +418,7 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                       </button>
                       
                       {activeActionMenu === project.projectId && (
-                        <div className="action-menu glass-card border border-white border-opacity-20 backdrop-blur-sm">
+                        <div className="action-menu glass-card border border-white border-opacity-30 backdrop-blur-md bg-black bg-opacity-80 shadow-2xl">
                           <div className="py-2">
                             <button
                               onClick={() => handleActionClick('check-status', project)}
@@ -533,30 +533,36 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
       {/* Modals - Outside main container for proper overlay rendering */}
       
       {editModalOpen && selectedProject && (
-        <div>
-          <EditProjectModal
-            project={selectedProject}
-            isOpen={editModalOpen}
-            onClose={() => {
-              setEditModalOpen(false);
-              setSelectedProject(null);
-            }}
-            onUpdate={handleProjectUpdate}
-          />
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          <div className="relative z-10">
+            <EditProjectModal
+              project={selectedProject}
+              isOpen={editModalOpen}
+              onClose={() => {
+                setEditModalOpen(false);
+                setSelectedProject(null);
+              }}
+              onUpdate={handleProjectUpdate}
+            />
+          </div>
         </div>
       )}
       
       {addDepositModalOpen && selectedProjectForDeposit && (
-        <div>
-          <AddDepositModal
-            project={selectedProjectForDeposit}
-            isOpen={addDepositModalOpen}
-            onClose={() => {
-              setAddDepositModalOpen(false);
-              setSelectedProjectForDeposit(null);
-            }}
-            onUpdate={handleDepositUpdate}
-          />
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          <div className="relative z-10">
+            <AddDepositModal
+              project={selectedProjectForDeposit}
+              isOpen={addDepositModalOpen}
+              onClose={() => {
+                setAddDepositModalOpen(false);
+                setSelectedProjectForDeposit(null);
+              }}
+              onUpdate={handleDepositUpdate}
+            />
+          </div>
         </div>
       )}
     </>

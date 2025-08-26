@@ -921,7 +921,7 @@ const MonthlyPlanningPage = () => {
               <textarea
                 value={currentMonth?.notes || ''}
                 onChange={(e) => updateMonthData(currentMonthIndex, 'notes', e.target.value)}
-                className="w-full h-48 modern-input resize-none"
+                className="w-full h-64 modern-input resize-none"
                 placeholder="📊 Add your monthly planning notes, goals, achievements, and improvement areas..."
               />
               <div className="mt-3 text-sm text-secondary">
