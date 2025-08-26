@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Filter, MoreVertical, Edit, Trash2, DollarSign, Calendar, User, FileText, Tag, Target, AlertCircle } from 'lucide-react';
+import { Search, MoreVertical } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
 import projectService from '../services/projectService';
 import EditProjectModal from './EditProjectModal';

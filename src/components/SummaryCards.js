@@ -99,8 +99,6 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
   
   // Convert to current currency for display
   const expectedRevenue = convertFromBase(expectedRevenueInBase);
-  const totalOverhead = convertFromBase(totalOverheadInBase);
-  const totalGeneralExpenses = convertFromBase(totalGeneralExpensesInBase);
   const totalExpenses = convertFromBase(totalExpensesInBase);
   
   // Use project data for deposits (actual received money) - convert from base currency

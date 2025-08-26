@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Save, Calendar, DollarSign, User, FileText, Tag, Globe } from 'lucide-react';
+import { X, Save, Calendar, DollarSign, User, FileText, Tag } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { projectCategories, projectStatuses, projectPriorities } from '../utils/constants';
 

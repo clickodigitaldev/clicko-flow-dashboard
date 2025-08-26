@@ -1,6 +1,6 @@
 const API_BASE_URL = 'http://localhost:5001/api';
 
-class OrgChartService {
+const orgChartService = {
   async getOrgChart() {
     try {
       const response = await fetch(`${API_BASE_URL}/org-chart`);
@@ -146,9 +146,9 @@ class OrgChartService {
       throw error;
     }
   }
-}
+};
 
-export default new OrgChartService();
+export default orgChartService;
 
 
 

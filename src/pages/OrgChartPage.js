@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Plus, TrendingUp, Users as UsersIcon, DollarSign, Building2, Upload, Edit3, Trash2, Camera, Crown, User, Users } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Plus, TrendingUp, Users as UsersIcon, DollarSign, Building2, Edit3, Trash2, Crown, User, Users } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import CurrencySwitcher from '../components/CurrencySwitcher';
 import { useCurrency } from '../contexts/CurrencyContext';

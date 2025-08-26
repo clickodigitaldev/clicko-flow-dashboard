@@ -12,7 +12,6 @@ import projectService from '../services/projectService';
 import { useCurrency } from '../contexts/CurrencyContext';
 
 const Dashboard = () => {
-  const { formatCurrency, convertFromBase } = useCurrency();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState('August 2025');
