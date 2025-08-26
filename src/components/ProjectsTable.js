@@ -218,29 +218,39 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
   };
 
   const handleActionClick = (action, project) => {
+    console.log('🎯 Action clicked:', action, 'Project:', project.projectId);
+    
     switch (action) {
       case 'check-status':
+        console.log('📊 Checking status for project:', project.projectId);
         handleCheckStatus(project);
         break;
       case 'push-project':
+        console.log('🚀 Pushing project:', project.projectId);
         handlePushProject(project);
         break;
       case 'send-reminder':
+        console.log('📧 Sending reminder for project:', project.projectId);
         handleSendReminder(project);
         break;
       case 'followup-complete':
+        console.log('✅ Followup complete for project:', project.projectId);
         handleFollowupComplete(project);
         break;
       case 'add-deposit':
+        console.log('💰 Adding deposit for project:', project.projectId);
         handleAddDeposit(project);
         break;
       case 'complete':
+        console.log('🎉 Completing project:', project.projectId);
         handleComplete(project);
         break;
       case 'edit':
+        console.log('✏️ Editing project:', project.projectId);
         handleEdit(project);
         break;
       case 'delete':
+        console.log('🗑️ Deleting project:', project.projectId);
         handleDelete(project);
         break;
       default:
@@ -256,6 +266,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
       // Check if click is on the three-dot button or inside the action menu
       const isClickOnButton = actionMenuRef.current && actionMenuRef.current.contains(event.target);
       const isClickOnMenu = event.target.closest('.action-menu');
+      const isClickOnActionButton = event.target.closest('button[onClick*="handleActionClick"]');
+      
+      // Don't close if clicking on action buttons
+      if (isClickOnActionButton) {
+        return;
+      }
       
       if (!isClickOnButton && !isClickOnMenu) {
         setActiveActionMenu(null);
@@ -421,8 +437,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                         <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-black bg-opacity-95 backdrop-blur-xl border border-white border-opacity-40 shadow-2xl rounded-lg">
                           <div className="py-2">
                             <button
-                              onClick={() => handleActionClick('check-status', project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleActionClick('check-status', project);
+                              }}
+                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-blue-500 bg-opacity-30 flex items-center justify-center mr-3 border border-blue-400 border-opacity-30">
                                 <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -433,8 +453,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                             </button>
                             
                             <button
-                              onClick={() => handleActionClick('push-project', project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleActionClick('push-project', project);
+                              }}
+                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-green-500 bg-opacity-30 flex items-center justify-center mr-3 border border-green-400 border-opacity-30">
                                 <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -445,8 +469,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                             </button>
                             
                             <button
-                              onClick={() => handleActionClick('send-reminder', project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleActionClick('send-reminder', project);
+                              }}
+                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-yellow-500 bg-opacity-30 flex items-center justify-center mr-3 border border-yellow-400 border-opacity-30">
                                 <svg className="w-5 h-5 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -457,8 +485,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                             </button>
                             
                             <button
-                              onClick={() => handleActionClick('followup-complete', project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleActionClick('followup-complete', project);
+                              }}
+                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-purple-500 bg-opacity-30 flex items-center justify-center mr-3 border border-purple-400 border-opacity-30">
                                 <svg className="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -469,8 +501,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                             </button>
                             
                             <button
-                              onClick={() => handleActionClick('add-deposit', project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleActionClick('add-deposit', project);
+                              }}
+                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-emerald-500 bg-opacity-30 flex items-center justify-center mr-3 border border-emerald-400 border-opacity-30">
                                 <svg className="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -483,8 +519,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                             <div className="border-t border-white border-opacity-20 my-2"></div>
                             
                             <button
-                              onClick={() => handleActionClick('complete', project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleActionClick('complete', project);
+                              }}
+                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-green-600 bg-opacity-30 flex items-center justify-center mr-3 border border-green-500 border-opacity-30">
                                 <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -495,8 +535,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                             </button>
                             
                             <button
-                              onClick={() => handleActionClick('edit', project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleActionClick('edit', project);
+                              }}
+                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-blue-600 bg-opacity-30 flex items-center justify-center mr-3 border border-blue-500 border-opacity-30">
                                 <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -507,8 +551,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                             </button>
                             
                             <button
-                              onClick={() => handleActionClick('delete', project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleActionClick('delete', project);
+                              }}
+                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-red-500 bg-opacity-30 flex items-center justify-center mr-3 border border-red-400 border-opacity-30">
                                 <svg className="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

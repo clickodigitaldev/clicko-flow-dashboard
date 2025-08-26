@@ -133,20 +133,6 @@ const AddProjectModal = ({ isOpen, onClose, onSave }) => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-secondary mb-2">
-              <FileText className="w-4 h-4 inline mr-2" />
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="modern-input w-full h-20 resize-none"
-              placeholder="Enter project description"
-            />
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-secondary mb-2">
