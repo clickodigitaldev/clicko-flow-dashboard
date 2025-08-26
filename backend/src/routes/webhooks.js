@@ -94,7 +94,11 @@ async function generateProjectId() {
 // Webhook endpoint for Salesmate
 router.post('/salesmate', async (req, res) => {
   try {
-    console.log('📥 Received webhook from Salesmate:', req.body);
+    console.log('📥 Received webhook from Salesmate');
+    console.log('📋 Request headers:', JSON.stringify(req.headers, null, 2));
+    console.log('📄 Request body:', JSON.stringify(req.body, null, 2));
+    console.log('🔍 Request method:', req.method);
+    console.log('🌐 Request URL:', req.url);
     
     const {
       closeDate,
@@ -106,10 +110,28 @@ router.post('/salesmate', async (req, res) => {
       title
     } = req.body;
 
+    console.log('📊 Parsed data:');
+    console.log('  - closeDate:', closeDate);
+    console.log('  - companyName:', companyName);
+    console.log('  - dealValue:', dealValue);
+    console.log('  - dueDate:', dueDate);
+    console.log('  - id:', id);
+    console.log('  - startDate:', startDate);
+    console.log('  - title:', title);
+
     // Validate required fields
     if (!companyName || !dealValue || !title) {
+      console.log('❌ Validation failed:');
+      console.log('  - companyName present:', !!companyName);
+      console.log('  - dealValue present:', !!dealValue);
+      console.log('  - title present:', !!title);
       return res.status(400).json({ 
-        error: 'Missing required fields: companyName, dealValue, title' 
+        error: 'Missing required fields: companyName, dealValue, title',
+        received: {
+          companyName: !!companyName,
+          dealValue: !!dealValue,
+          title: !!title
+        }
       });
     }
 
