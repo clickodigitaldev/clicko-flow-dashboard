@@ -1,8 +1,9 @@
 const express = require('express');
-const mongoose = require('mongoose'); // Re-enable mongoose
+const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -24,7 +25,9 @@ const allowedOrigins = [
   'http://localhost:3001',
   process.env.CORS_ORIGIN,
   'https://clicko-flow-frontend.onrender.com',
-  'https://clicko-flow-api.onrender.com'
+  'https://clicko-flow-api.onrender.com',
+  process.env.RAILWAY_STATIC_URL,
+  process.env.RAILWAY_PUBLIC_DOMAIN
 ].filter(Boolean);
 
 app.use(cors({
@@ -43,12 +46,13 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection - use local MongoDB
-mongoose.connect('mongodb://localhost:27017/clicko-flow')
-.then(() => console.log('✅ Connected to Local MongoDB'))
+// Database connection - use Railway MongoDB or local MongoDB
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/clicko-flow';
+mongoose.connect(MONGODB_URI)
+.then(() => console.log('✅ Connected to MongoDB'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Routes - restore real database routes
+// Routes - API endpoints
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/monthly-planning', monthlyPlanningRoutes);
@@ -56,16 +60,25 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/forecast', forecastRoutes);
 app.use('/api/org-chart', orgChartRoutes);
 
-// Remove the temporary test routes since we're using real database routes now
-
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'Clicko Flow API is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// Serve static files from the React app build directory
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../../build')));
+  
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../build', 'index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -76,15 +89,17 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// 404 handler for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API route not found' });
 });
 
-const PORT = 5001; // Use port 5001 to avoid conflicts
+const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 API available at http://localhost:${PORT}/api`);
   console.log(`🏥 Health check at http://localhost:${PORT}/api/health`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
+
