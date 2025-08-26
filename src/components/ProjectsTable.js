@@ -18,7 +18,84 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addDepositModalOpen, setAddDepositModalOpen] = useState(false);
   const [selectedProjectForDeposit, setSelectedProjectForDeposit] = useState(null);
-  const actionMenuRef = useRef();
+  const actionMenuRef = useRef(null);
+
+  // Simplified action handlers with console logs
+  const handleCheckStatus = (project) => {
+    console.log('📊 Check Status clicked for project:', project.projectId);
+    alert(`Checking status for project ${project.projectId}`);
+  };
+
+  const handlePushProject = (project) => {
+    console.log('🚀 Push Project clicked for project:', project.projectId);
+    alert(`Pushing project ${project.projectId}`);
+  };
+
+  const handleSendReminder = (project) => {
+    console.log('📧 Send Reminder clicked for project:', project.projectId);
+    alert(`Sending reminder for project ${project.projectId}`);
+  };
+
+  const handleFollowupComplete = (project) => {
+    console.log('✅ Followup Complete clicked for project:', project.projectId);
+    alert(`Followup complete for project ${project.projectId}`);
+  };
+
+  const handleAddDeposit = (project) => {
+    console.log('💰 Add Deposit clicked for project:', project.projectId);
+    setSelectedProjectForDeposit(project);
+    setAddDepositModalOpen(true);
+  };
+
+  const handleComplete = async (project) => {
+    console.log('🎉 Complete clicked for project:', project.projectId);
+    try {
+      // Call the update API to mark as completed
+      projectService.updateProject(project._id, { status: 'Completed' });
+      onUpdateProject(project.projectId, { ...project, status: 'Completed' });
+      alert(`Project ${project.projectId} marked as completed successfully`);
+    } catch (error) {
+      console.error('Error completing project:', error);
+      alert('Error completing project');
+    }
+  };
+
+  const handleEdit = (project) => {
+    console.log('✏️ Edit clicked for project:', project.projectId);
+    setSelectedProject(project);
+    setEditModalOpen(true);
+  };
+
+  const handleDelete = (project) => {
+    console.log('🗑️ Delete clicked for project:', project.projectId);
+    if (window.confirm(`Are you sure you want to delete project ${project.projectId}?`)) {
+      // Handle delete logic here
+      alert(`Project ${project.projectId} deleted successfully`);
+    }
+  };
+
+  const toggleActionMenu = (projectId) => {
+    console.log('🔄 Toggle menu for project:', projectId);
+    if (activeActionMenu === projectId) {
+      setActiveActionMenu(null);
+    } else {
+      setActiveActionMenu(projectId);
+    }
+  };
+
+  // Simplified click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target)) {
+        setActiveActionMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Filter projects based on search term, filters, and active filter
   const filteredProjects = projects.filter(project => {
@@ -144,149 +221,36 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
     setSelectedProjectForDeposit(null);
   };
 
-  const handleCheckStatus = (project) => {
-    alert(`Checking status for ${project.clientName} - Project ${project.projectId}`);
-    setActiveActionMenu(null);
-  };
-
-  const handlePushProject = (project) => {
-    alert(`Pushing project ${project.projectId} to next phase`);
-    setActiveActionMenu(null);
-  };
-
-  const handleSendReminder = (project) => {
-    alert(`Payment reminder sent to ${project.clientName} for project ${project.projectId}`);
-    setActiveActionMenu(null);
-  };
-
-  const handleFollowupComplete = (project) => {
-    alert(`Follow-up completed for ${project.clientName} - Project ${project.projectId}`);
-    setActiveActionMenu(null);
-  };
-
-  const handleAddDeposit = (project) => {
-    // This will open a modal for adding deposit
-    setSelectedProjectForDeposit(project);
-    setAddDepositModalOpen(true);
-    setActiveActionMenu(null);
-  };
-
-  const handleEdit = (project) => {
-    setSelectedProject(project);
-    setEditModalOpen(true);
-    setActiveActionMenu(null);
-  };
-
-  const handleDelete = async (project) => {
-    if (window.confirm(`Are you sure you want to delete project ${project.projectId}?`)) {
-      try {
-        // Call the delete API using projectService
-        await projectService.deleteProject(project._id);
-        
-        // Remove from local state
-        onUpdateProject(project.projectId, null);
-        alert(`Project ${project.projectId} deleted successfully`);
-      } catch (error) {
-        console.error('Error deleting project:', error);
-        alert('Error deleting project');
-      }
-    }
-    setActiveActionMenu(null);
-  };
-
-  const handleComplete = (project) => {
-    if (window.confirm(`Are you sure you want to mark project ${project.projectId} as completed?`)) {
-      try {
-        // Call the update API to mark as completed
-        projectService.updateProject(project._id, { status: 'Completed' });
-        onUpdateProject(project.projectId, { ...project, status: 'Completed' });
-        alert(`Project ${project.projectId} marked as completed successfully`);
-      } catch (error) {
-        console.error('Error completing project:', error);
-        alert('Error completing project');
-      }
-    }
-    setActiveActionMenu(null);
-  };
-
-  const toggleActionMenu = (projectId) => {
-    if (activeActionMenu === projectId) {
-      setActiveActionMenu(null);
-    } else {
-      setActiveActionMenu(projectId);
-    }
-  };
-
   const handleActionClick = (action, project) => {
-    console.log('🎯 Action clicked:', action, 'Project:', project.projectId);
-    
     switch (action) {
       case 'check-status':
-        console.log('📊 Checking status for project:', project.projectId);
         handleCheckStatus(project);
         break;
       case 'push-project':
-        console.log('🚀 Pushing project:', project.projectId);
         handlePushProject(project);
         break;
       case 'send-reminder':
-        console.log('📧 Sending reminder for project:', project.projectId);
         handleSendReminder(project);
         break;
       case 'followup-complete':
-        console.log('✅ Followup complete for project:', project.projectId);
         handleFollowupComplete(project);
         break;
       case 'add-deposit':
-        console.log('💰 Adding deposit for project:', project.projectId);
         handleAddDeposit(project);
         break;
       case 'complete':
-        console.log('🎉 Completing project:', project.projectId);
         handleComplete(project);
         break;
       case 'edit':
-        console.log('✏️ Editing project:', project.projectId);
         handleEdit(project);
         break;
       case 'delete':
-        console.log('🗑️ Deleting project:', project.projectId);
         handleDelete(project);
         break;
       default:
-        console.log('🔄 Unknown action:', action);
+        break;
     }
-    
-    setActiveActionMenu(null);
   };
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Check if click is on the three-dot button or inside the action menu
-      const isClickOnButton = actionMenuRef.current && actionMenuRef.current.contains(event.target);
-      const isClickOnMenu = event.target.closest('.action-menu');
-      const isClickOnActionButton = event.target.closest('button[onClick*="handleActionClick"]');
-      
-      // Don't close if clicking on action buttons
-      if (isClickOnActionButton) {
-        return;
-      }
-      
-      if (!isClickOnButton && !isClickOnMenu) {
-        setActiveActionMenu(null);
-      }
-    };
-
-    // Add event listener with higher priority
-    document.addEventListener('mousedown', handleClickOutside, true);
-    document.addEventListener('click', handleClickOutside, true);
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside, true);
-      document.removeEventListener('click', handleClickOutside, true);
-    };
-  }, []);
 
   return (
     <>
@@ -427,8 +391,11 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="relative" ref={actionMenuRef}>
                       <button 
-                        onClick={() => toggleActionMenu(project.projectId)}
-                        className="p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors text-white"
+                        onClick={() => {
+                          console.log('🔄 Three dots clicked for project:', project.projectId);
+                          toggleActionMenu(project.projectId);
+                        }}
+                        className="p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors text-white cursor-pointer"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -436,12 +403,8 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                       {activeActionMenu === project.projectId && (
                         <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-black bg-opacity-95 backdrop-blur-xl border border-white border-opacity-40 shadow-2xl rounded-lg">
                           <div className="py-2">
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleActionClick('check-status', project);
-                              }}
+                            <div 
+                              onClick={() => handleCheckStatus(project)}
                               className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-blue-500 bg-opacity-30 flex items-center justify-center mr-3 border border-blue-400 border-opacity-30">
@@ -450,14 +413,10 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                                 </svg>
                               </div>
                               <span className="text-sm font-medium">Check Status</span>
-                            </button>
+                            </div>
                             
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleActionClick('push-project', project);
-                              }}
+                            <div 
+                              onClick={() => handlePushProject(project)}
                               className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-green-500 bg-opacity-30 flex items-center justify-center mr-3 border border-green-400 border-opacity-30">
@@ -466,14 +425,10 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                                 </svg>
                               </div>
                               <span className="text-sm font-medium">Push Project</span>
-                            </button>
+                            </div>
                             
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleActionClick('send-reminder', project);
-                              }}
+                            <div 
+                              onClick={() => handleSendReminder(project)}
                               className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-yellow-500 bg-opacity-30 flex items-center justify-center mr-3 border border-yellow-400 border-opacity-30">
@@ -482,14 +437,10 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                                 </svg>
                               </div>
                               <span className="text-sm font-medium">Send Reminder</span>
-                            </button>
+                            </div>
                             
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleActionClick('followup-complete', project);
-                              }}
+                            <div 
+                              onClick={() => handleFollowupComplete(project)}
                               className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-purple-500 bg-opacity-30 flex items-center justify-center mr-3 border border-purple-400 border-opacity-30">
@@ -498,14 +449,10 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                                 </svg>
                               </div>
                               <span className="text-sm font-medium">Followup Complete</span>
-                            </button>
+                            </div>
                             
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleActionClick('add-deposit', project);
-                              }}
+                            <div 
+                              onClick={() => handleAddDeposit(project)}
                               className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-emerald-500 bg-opacity-30 flex items-center justify-center mr-3 border border-emerald-400 border-opacity-30">
@@ -514,16 +461,12 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                                 </svg>
                               </div>
                               <span className="text-sm font-medium">Add Deposit</span>
-                            </button>
+                            </div>
                             
                             <div className="border-t border-white border-opacity-20 my-2"></div>
                             
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleActionClick('complete', project);
-                              }}
+                            <div 
+                              onClick={() => handleComplete(project)}
                               className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-green-600 bg-opacity-30 flex items-center justify-center mr-3 border border-green-500 border-opacity-30">
@@ -532,14 +475,10 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                                 </svg>
                               </div>
                               <span className="text-sm font-medium">Complete</span>
-                            </button>
+                            </div>
                             
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleActionClick('edit', project);
-                              }}
+                            <div 
+                              onClick={() => handleEdit(project)}
                               className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-blue-600 bg-opacity-30 flex items-center justify-center mr-3 border border-blue-500 border-opacity-30">
@@ -548,14 +487,10 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                                 </svg>
                               </div>
                               <span className="text-sm font-medium">Edit</span>
-                            </button>
+                            </div>
                             
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleActionClick('delete', project);
-                              }}
+                            <div 
+                              onClick={() => handleDelete(project)}
                               className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
                             >
                               <div className="w-8 h-8 rounded-lg bg-red-500 bg-opacity-30 flex items-center justify-center mr-3 border border-red-400 border-opacity-30">
@@ -564,7 +499,7 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
                                 </svg>
                               </div>
                               <span className="text-sm font-medium text-red-300">Delete</span>
-                            </button>
+                            </div>
                           </div>
                         </div>
                       )}
