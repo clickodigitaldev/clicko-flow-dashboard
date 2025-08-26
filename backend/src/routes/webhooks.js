@@ -42,6 +42,30 @@ async function getNiftyAccessToken() {
   }
 }
 
+// Function to get project from Nifty
+async function getNiftyProject(accessToken, projectId) {
+  try {
+    const response = await fetch(`https://openapi.niftypm.com/api/v1.0/projects/${projectId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to get Nifty project: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error getting Nifty project:', error);
+    throw error;
+  }
+}
+
 // Function to create project in Nifty
 async function createNiftyProject(accessToken, projectData) {
   try {
@@ -57,8 +81,7 @@ async function createNiftyProject(accessToken, projectData) {
         demo: false,
         subteam_id: "leq_exMcRwvMH",
         access_type: 'public',
-        template_id: 'i!7IS820UlgK1',
-        default_tasks_view: 'list'
+        template_id: 'i!7IS820UlgK1'
       }),
     });
 
@@ -263,6 +286,97 @@ router.get('/health', (req, res) => {
     message: 'Webhook service is running',
     timestamp: new Date().toISOString()
   });
+});
+
+// Webhook endpoint for Nifty updates
+router.post('/nifty', async (req, res) => {
+  try {
+    console.log('📥 Received webhook from Nifty');
+    console.log('📋 Request body:', JSON.stringify(req.body, null, 2));
+    
+    const { eventType, data } = req.body;
+    
+    // Only process taskUpdated events
+    if (eventType !== 'taskUpdated') {
+      console.log('⏭️ Skipping non-taskUpdated event:', eventType);
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Event ignored - not a taskUpdated event' 
+      });
+    }
+    
+    console.log('✅ Processing taskUpdated event');
+    console.log('📊 Task data:', JSON.stringify(data, null, 2));
+    
+    // Extract project ID from the task data
+    const niftyProjectId = data.project?.id;
+    if (!niftyProjectId) {
+      console.log('❌ No project ID found in task data');
+      return res.status(400).json({ 
+        error: 'No project ID found in task data' 
+      });
+    }
+    
+    console.log('🔍 Looking for project with Nifty ID:', niftyProjectId);
+    
+    // Find our project by Nifty project ID
+    const project = await Project.findOne({ niftyProjectId });
+    if (!project) {
+      console.log('❌ Project not found with Nifty ID:', niftyProjectId);
+      return res.status(404).json({ 
+        error: 'Project not found with this Nifty ID' 
+      });
+    }
+    
+    console.log('✅ Found project:', project.projectId);
+    
+    // Get updated project data from Nifty
+    try {
+      console.log('🔄 Getting Nifty access token...');
+      const accessToken = await getNiftyAccessToken();
+      
+      console.log('📋 Fetching updated project data from Nifty...');
+      const niftyProject = await getNiftyProject(accessToken, niftyProjectId);
+      
+      console.log('📊 Nifty project data:', JSON.stringify(niftyProject, null, 2));
+      
+      // Extract progress from Nifty project
+      const progress = niftyProject.progress || 0;
+      console.log('📈 Project progress from Nifty:', progress);
+      
+      // Update our project with the new progress
+      project.progress = progress;
+      await project.save();
+      
+      console.log('✅ Project progress updated:', project.projectId, 'Progress:', progress);
+      
+      // Return success response
+      res.status(200).json({
+        success: true,
+        message: 'Project progress updated successfully',
+        data: {
+          projectId: project.projectId,
+          projectName: project.projectName,
+          progress: progress,
+          niftyProjectId: niftyProjectId
+        }
+      });
+      
+    } catch (niftyError) {
+      console.error('❌ Error fetching Nifty project data:', niftyError);
+      return res.status(500).json({ 
+        error: 'Failed to fetch Nifty project data',
+        message: niftyError.message 
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Nifty webhook error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message 
+    });
+  }
 });
 
 module.exports = router;

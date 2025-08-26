@@ -103,6 +103,13 @@ const projectSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Project progress tracking (0-100)
+  progress: {
+    type: Number,
+    min: [0, 'Progress cannot be negative'],
+    max: [100, 'Progress cannot exceed 100'],
+    default: 0
+  },
   // Payment tracking with currency support
   paymentHistory: [{
     amount: {
