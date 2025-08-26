@@ -1,8 +1,12 @@
 const express = require('express');
+const multer = require('multer');
 const Project = require('../models/Project');
 const currencyService = require('../services/currencyService');
 
 const router = express.Router();
+
+// Configure multer for handling multipart/form-data
+const upload = multer();
 
 // Nifty API configuration
 const NIFTY_REFRESH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2RlIjoiSm5zNzBpbzdIOVQ2YXJLTWNKNmJ6TkRkRjBUWUxtV3BKMExKazA1aUNwZ1RjdzB0RWRtR09sUVVUdWZPUTJEbiIsImNsaWVudF9pZCI6IlJzNFFMQWxiVWNjeUFVMktQNjBEVk5ualRXdjJ1SW43IiwiY2xpZW50X3NlY3JldCI6IndpMjRUelo3WmhOUTJrN2J2d0M5WlZ2S2ZzdXdqYkNrUmtMb28xOTRreWwwNXo4aHMwdFBEMU5tdUxhcEEzV2IiLCJpYXQiOjE3NTYyMTQwNDMsImV4cCI6MzMyODIyNTY0NDN9.p-xP4EOyaND-32OZID5yYYBrLZxdNdCKjk8vdBCj16I';
@@ -92,13 +96,35 @@ async function generateProjectId() {
 }
 
 // Webhook endpoint for Salesmate
-router.post('/salesmate', async (req, res) => {
+router.post('/salesmate', upload.any(), async (req, res) => {
   try {
     console.log('📥 Received webhook from Salesmate');
     console.log('📋 Request headers:', JSON.stringify(req.headers, null, 2));
     console.log('📄 Request body:', JSON.stringify(req.body, null, 2));
+    console.log('📁 Request files:', JSON.stringify(req.files, null, 2));
     console.log('🔍 Request method:', req.method);
     console.log('🌐 Request URL:', req.url);
+    
+    // Handle both JSON and form data
+    let webhookData = req.body;
+    
+    // If body is empty but we have form data, try to parse it
+    if (Object.keys(req.body).length === 0 && req.headers['content-type']?.includes('multipart/form-data')) {
+      console.log('🔄 Detected multipart/form-data, attempting to parse...');
+      
+      // For multipart/form-data, the data might be in req.body.fields or similar
+      // Let's check if we can access it differently
+      webhookData = req.body;
+      
+      // If still empty, try to get raw body data
+      if (Object.keys(webhookData).length === 0) {
+        console.log('⚠️ Empty body detected, checking for alternative data sources...');
+        // The data might be available in a different format
+        webhookData = req.body;
+      }
+    }
+    
+    console.log('📊 Final webhook data:', JSON.stringify(webhookData, null, 2));
     
     const {
       closeDate,
@@ -108,7 +134,7 @@ router.post('/salesmate', async (req, res) => {
       id,
       startDate,
       title
-    } = req.body;
+    } = webhookData;
 
     console.log('📊 Parsed data:');
     console.log('  - closeDate:', closeDate);
