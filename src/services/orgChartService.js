@@ -13,7 +13,7 @@ const orgChartService = {
       console.error('Error fetching org chart:', error);
       throw error;
     }
-  }
+  },
 
   async updateOrgChart(orgChartData) {
     try {
@@ -33,7 +33,7 @@ const orgChartService = {
       console.error('Error updating org chart:', error);
       throw error;
     }
-  }
+  },
 
   async addTeam(teamData) {
     try {
@@ -53,7 +53,7 @@ const orgChartService = {
       console.error('Error adding team:', error);
       throw error;
     }
-  }
+  },
 
   async updateTeam(teamId, teamData) {
     try {
@@ -73,7 +73,7 @@ const orgChartService = {
       console.error('Error updating team:', error);
       throw error;
     }
-  }
+  },
 
   async deleteTeam(teamId) {
     try {
@@ -89,7 +89,7 @@ const orgChartService = {
       console.error('Error deleting team:', error);
       throw error;
     }
-  }
+  },
 
   async addMember(teamId, memberData) {
     try {
@@ -109,7 +109,7 @@ const orgChartService = {
       console.error('Error adding member:', error);
       throw error;
     }
-  }
+  },
 
   async updateMember(teamId, memberId, memberData) {
     try {
@@ -129,7 +129,7 @@ const orgChartService = {
       console.error('Error updating member:', error);
       throw error;
     }
-  }
+  },
 
   async deleteMember(teamId, memberId) {
     try {
