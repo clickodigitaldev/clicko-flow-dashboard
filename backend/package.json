@@ -19,7 +19,8 @@
     "bcryptjs": "^2.4.3",
     "axios": "^1.4.0",
     "crypto": "^1.0.1",
-    "serve": "^14.2.0"
+    "serve": "^14.2.0",
+    "moment": "^2.29.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
