@@ -23,7 +23,8 @@
     "eject": "react-scripts eject",
     "start:prod": "npm run build && cd backend && npm install && npm start",
     "dev": "concurrently \"cd backend && npm start\" \"npm start\"",
-    "install:all": "npm install && cd backend && npm install"
+    "install:all": "npm install && cd backend && npm install",
+    "init-db": "node init-database.js"
   },
   "browserslist": {
     "production": [
