@@ -98,10 +98,6 @@ const projectSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  salesmateDealValue: {
-    type: String,
-    trim: true
-  },
   // Nifty integration fields
   niftyProjectId: {
     type: String,

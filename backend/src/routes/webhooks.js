@@ -152,8 +152,7 @@ router.post('/salesmate', async (req, res) => {
       description: `Project created from Salesmate deal ID: ${id}`,
       tags: ['Salesmate', 'Webhook'],
       notes: `Deal Value: ${dealValue} ${totalAmountCurrency}\nClose Date: ${closeDate}\nDue Date: ${dueDate}`,
-      salesmateDealId: id,
-      salesmateDealValue: dealValue
+      salesmateDealId: id
     };
 
     // Create project in our database
