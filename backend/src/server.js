@@ -20,10 +20,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://clicko-flow-dashboard-production-7c2e.up.railway.app"]
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://clicko-flow-production.up.railway.app"]
     }
   }
 }));
@@ -38,7 +39,7 @@ const allowedOrigins = [
   'https://clicko-flow-api.onrender.com',
   process.env.RAILWAY_STATIC_URL,
   process.env.RAILWAY_PUBLIC_DOMAIN,
-  'https://clicko-flow-dashboard-production-7c2e.up.railway.app'
+  'https://clicko-flow-production.up.railway.app'
 ].filter(Boolean);
 
 app.use(cors({
