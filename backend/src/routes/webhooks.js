@@ -11,7 +11,7 @@ const upload = multer();
 // Nifty API configuration
 const NIFTY_REFRESH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2RlIjoiSm5zNzBpbzdIOVQ2YXJLTWNKNmJ6TkRkRjBUWUxtV3BKMExKazA1aUNwZ1RjdzB0RWRtR09sUVVUdWZPUTJEbiIsImNsaWVudF9pZCI6IlJzNFFMQWxiVWNjeUFVMktQNjBEVk5ualRXdjJ1SW43IiwiY2xpZW50X3NlY3JldCI6IndpMjRUelo3WmhOUTJrN2J2d0M5WlZ2S2ZzdXdqYkNrUmtMb28xOTRreWwwNXo4aHMwdFBEMU5tdUxhcEEzV2IiLCJpYXQiOjE3NTYyMTQwNDMsImV4cCI6MzMyODIyNTY0NDN9.p-xP4EOyaND-32OZID5yYYBrLZxdNdCKjk8vdBCj16I';
 const NIFTY_CLIENT_ID = 'Rs4QLAlbUccyAU2KP60DVNnjTWv2uIn7';
-const NIFTY_CLIENT_SECRET = 'wi24TZz7ZhNQ2k7bvwC9ZVvKfsuwjbCkRkLoo194ky05z8hs0tPD1NmuLapA3Wb';
+const NIFTY_CLIENT_SECRET = 'wi24TzZ7ZhNQ2k7bvwC9ZVvKfsuwjbCkRkLoo194kyl05z8hs0tPD1NmuLapA3Wb';
 
 // Function to get Nifty access token
 async function getNiftyAccessToken() {
@@ -55,8 +55,9 @@ async function createNiftyProject(accessToken, projectData) {
         name: projectData.projectName,
         description: projectData.description || `Project created from Salesmate deal: ${projectData.title}`,
         demo: false,
-        access_type: 'team',
-        project_type: 'general',
+        subteam_id: "leq_exMcRwvMH",
+        access_type: 'public',
+        template_id: 'i!7IS820UlgK1',
         default_tasks_view: 'list'
       }),
     });
@@ -217,7 +218,7 @@ router.post('/salesmate', upload.any(), async (req, res) => {
       console.log('📋 Creating project in Nifty...');
       niftyProject = await createNiftyProject(accessToken, {
         projectName: title,
-        description: `Project created from Salesmate deal: ${title}\nClient: ${companyName}\nDeal Value: ${dealValue} ${totalAmountCurrency}`
+        description: `New Project Created: ${title}\nClient: ${companyName}\nStart Date: ${expectedStartDate}\nCompletion Date: ${expectedCompletion}\n`
       });
       
       console.log('✅ Project created in Nifty:', niftyProject.id);
