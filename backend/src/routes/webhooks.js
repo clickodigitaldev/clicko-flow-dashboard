@@ -78,7 +78,6 @@ async function createNiftyProject(accessToken, projectData) {
       body: JSON.stringify({
         name: projectData.projectName,
         description: projectData.description || `Project created from Salesmate deal: ${projectData.title}`,
-        demo: false,
         subteam_id: "leq_exMcRwvMH",
         access_type: 'public',
         template_id: 'i!7IS820UlgK1'
