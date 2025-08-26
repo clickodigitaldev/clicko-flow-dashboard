@@ -43,7 +43,7 @@ export const validateToken = async () => {
       return false;
     }
 
-    const response = await fetch('http://localhost:5001/api/health', {
+    const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://clicko-flow-api.onrender.com/api'}/health`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

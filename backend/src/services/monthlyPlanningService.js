@@ -5,10 +5,15 @@ class MonthlyPlanningService {
   // Get all monthly planning data for a user
   async getAllMonthlyPlanning(userId) {
     try {
-      const monthlyData = await MonthlyPlanning.find({ 
-        userId, 
-        isActive: true 
-      }).sort({ monthDate: 1 });
+      // Handle demo user differently
+      let query = {};
+      if (userId !== 'demo-user-123') {
+        query.userId = userId;
+      }
+      query.isActive = true;
+      
+      const monthlyData = await MonthlyPlanning.find(query).sort({ monthDate: 1 });
+      console.log(`📊 Found ${monthlyData.length} monthly planning records for user ${userId}`);
       
       return monthlyData;
     } catch (error) {
@@ -30,7 +35,16 @@ class MonthlyPlanningService {
         throw new Error('Invalid month format');
       }
 
-      const monthData = await MonthlyPlanning.findByMonth(userId, month);
+      // Handle demo user differently
+      let monthData;
+      if (userId === 'demo-user-123') {
+        // For demo user, try to find by month only (no userId filter)
+        monthData = await MonthlyPlanning.findOne({ month: month, isActive: true });
+      } else {
+        monthData = await MonthlyPlanning.findByMonth(userId, month);
+      }
+      
+      console.log(`📊 Monthly planning for ${month}: ${monthData ? 'Found' : 'Not found'}`);
       return monthData;
     } catch (error) {
       throw new Error(`Failed to get monthly planning by month: ${error.message}`);

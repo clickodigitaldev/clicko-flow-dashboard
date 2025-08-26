@@ -5,7 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Production build
-build/
+# build/  # Commented out so Render can access build files
 dist/
 
 # Environment variables

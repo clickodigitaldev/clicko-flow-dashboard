@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://clicko-flow-api.onrender.com/api';
 
 class MonthlyPlanningService {
   constructor() {
@@ -6,28 +6,66 @@ class MonthlyPlanningService {
   }
 
   // Get auth token from localStorage
-  getAuthToken() {
+  async getAuthToken() {
     let token = localStorage.getItem('authToken');
+    console.log('🔐 Current token from localStorage:', token ? 'Present' : 'None');
     
-    // If no token exists, create a demo token for development
+    // If no token exists, try to create one
     if (!token) {
-      token = this.createDemoToken();
+      console.log('🔐 No token found, creating demo token...');
+      token = await this.createDemoToken();
+      console.log('🔐 Demo token created:', token ? 'Success' : 'Failed');
     }
     
+    // If still no token (production), show auth message
+    if (!token) {
+      console.log('🔐 No valid authentication token found');
+      // For now, we'll use a fallback approach in production
+      return 'demo-token-for-production';
+    }
+    
+    console.log('🔐 Returning token:', token.substring(0, 20) + '...');
     return token;
   }
 
   // Create demo token for development
-  createDemoToken() {
-    // This is a demo token for development - in production, users should authenticate
+  async createDemoToken() {
+    // For production, fetch a fresh demo token from the API
+    if (process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost') {
+      try {
+        console.log('🔐 Production environment detected - fetching demo token from API');
+        const demoUrl = `${this.baseURL.replace('/monthly-planning', '')}/demo/token`;
+        console.log('🔐 Demo token URL:', demoUrl);
+        
+        const response = await fetch(demoUrl);
+        console.log('🔐 Demo token response status:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('🔐 Demo token data received:', data);
+          localStorage.setItem('authToken', data.token);
+          console.log('🔐 Demo token stored in localStorage');
+          return data.token;
+        } else {
+          console.error('🔐 Demo token response not ok:', response.status, response.statusText);
+          const errorText = await response.text();
+          console.error('🔐 Demo token error response:', errorText);
+        }
+      } catch (error) {
+        console.error('🔐 Failed to fetch demo token:', error);
+      }
+      return null;
+    }
+    
+    // This is a demo token for development only
     const demoToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4YTc5NzMwMDkxYjA2YjA2NTRlYzA0YSIsImlhdCI6MTc1NTgxODk4OSwiZXhwIjoxNzU1OTA1Mzg5fQ.KMDepRqhARXo-pNiqcz8Aw8QybOVId_MsLcpkXIsyRY';
     localStorage.setItem('authToken', demoToken);
     return demoToken;
   }
 
   // Get auth headers
-  getAuthHeaders() {
-    const token = this.getAuthToken();
+  async getAuthHeaders() {
+    const token = await this.getAuthToken();
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -39,7 +77,7 @@ class MonthlyPlanningService {
     try {
       const response = await fetch(this.baseURL, {
         method: 'GET',
-        headers: this.getAuthHeaders()
+        headers: await this.getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -59,7 +97,9 @@ class MonthlyPlanningService {
     try {
       const response = await fetch(`${this.baseURL}/${encodeURIComponent(month)}`, {
         method: 'GET',
-        headers: this.getAuthHeaders()
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (!response.ok) {
@@ -70,10 +110,12 @@ class MonthlyPlanningService {
       }
 
       const data = await response.json();
-      return data.data;
+      return data; // Backend returns data directly, not wrapped in data.data
     } catch (error) {
       console.error('Error fetching monthly planning by month:', error);
-      throw error;
+      
+      console.log('❌ API failed for month:', month, '- No fallback available');
+      return null;
     }
   }
 
@@ -82,7 +124,7 @@ class MonthlyPlanningService {
     try {
       const response = await fetch(this.baseURL, {
         method: 'POST',
-        headers: this.getAuthHeaders(),
+        headers: await this.getAuthHeaders(),
         body: JSON.stringify(monthData)
       });
 
@@ -91,7 +133,7 @@ class MonthlyPlanningService {
       }
 
       const data = await response.json();
-      return data.data;
+      return data; // Backend returns data directly
     } catch (error) {
       console.error('Error saving monthly planning:', error);
       throw error;
@@ -103,7 +145,7 @@ class MonthlyPlanningService {
     try {
       const response = await fetch(`${this.baseURL}/${id}`, {
         method: 'PUT',
-        headers: this.getAuthHeaders(),
+        headers: await this.getAuthHeaders(),
         body: JSON.stringify(updates)
       });
 
@@ -112,7 +154,7 @@ class MonthlyPlanningService {
       }
 
       const data = await response.json();
-      return data.data;
+      return data; // Backend returns data directly
     } catch (error) {
       console.error('Error updating monthly planning:', error);
       throw error;
@@ -124,7 +166,7 @@ class MonthlyPlanningService {
     try {
       const response = await fetch(`${this.baseURL}/${id}`, {
         method: 'DELETE',
-        headers: this.getAuthHeaders()
+        headers: await this.getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -144,7 +186,7 @@ class MonthlyPlanningService {
     try {
       const response = await fetch(`${this.baseURL}/initialize`, {
         method: 'POST',
-        headers: this.getAuthHeaders()
+        headers: await this.getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -164,7 +206,7 @@ class MonthlyPlanningService {
     try {
       const response = await fetch(`${this.baseURL}/summary`, {
         method: 'GET',
-        headers: this.getAuthHeaders()
+        headers: await this.getAuthHeaders()
       });
 
       if (!response.ok) {
