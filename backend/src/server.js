@@ -56,7 +56,12 @@ mongoose.connect(MONGODB_URI)
   // Initialize database with default data if it's empty
   try {
     const OrgChart = require('./models/OrgChart');
+    const Project = require('./models/Project');
+    const MonthlyPlanning = require('./models/MonthlyPlanning');
+    
     const existingOrgChart = await OrgChart.findOne();
+    const existingProjects = await Project.findOne();
+    const existingMonthlyPlanning = await MonthlyPlanning.findOne();
     
     if (!existingOrgChart) {
       console.log('📊 Initializing database with default org chart data...');
@@ -139,6 +144,108 @@ mongoose.connect(MONGODB_URI)
       
       await defaultOrgChart.save();
       console.log('✅ Default org chart data created');
+    }
+    
+    if (!existingProjects) {
+      console.log('📊 Initializing database with sample projects...');
+      const sampleProjects = [
+        {
+          projectId: 'CL001',
+          projectName: 'E-commerce Website',
+          clientName: 'TechCorp Inc.',
+          totalAmount: 50000,
+          totalAmountCurrency: 'AED',
+          totalAmountInBase: 50000,
+          depositPaid: 15000,
+          depositPaidCurrency: 'AED',
+          depositPaidInBase: 15000,
+          expectedStartDate: '2025-08-01',
+          expectedCompletion: '2025-10-31',
+          status: 'In Progress',
+          priority: 'High',
+          description: 'Full-stack e-commerce website development',
+          tags: ['Web Development', 'E-commerce'],
+          notes: 'Client requires payment gateway integration',
+          userId: '68a79730091b06b0654ec04a',
+          monthOfPayment: 'August 2025'
+        },
+        {
+          projectId: 'CL002',
+          projectName: 'Mobile App Development',
+          clientName: 'StartupXYZ',
+          totalAmount: 75000,
+          totalAmountCurrency: 'AED',
+          totalAmountInBase: 75000,
+          depositPaid: 25000,
+          depositPaidCurrency: 'AED',
+          depositPaidInBase: 25000,
+          expectedStartDate: '2025-09-01',
+          expectedCompletion: '2025-12-31',
+          status: 'Pending',
+          priority: 'Medium',
+          description: 'Cross-platform mobile application',
+          tags: ['Mobile Development', 'React Native'],
+          notes: 'Requires push notification setup',
+          userId: '68a79730091b06b0654ec04a',
+          monthOfPayment: 'September 2025'
+        }
+      ];
+      
+      await Project.insertMany(sampleProjects);
+      console.log('✅ Sample projects created');
+    }
+    
+    if (!existingMonthlyPlanning) {
+      console.log('📊 Initializing database with sample monthly planning...');
+      const sampleMonthlyPlanning = new MonthlyPlanning({
+        userId: '68a79730091b06b0654ec04a',
+        month: 'August 2025',
+        revenueStreams: [
+          {
+            name: 'Web Development',
+            amount: 50000,
+            amountCurrency: 'AED',
+            amountInBase: 50000
+          },
+          {
+            name: 'Consulting',
+            amount: 20000,
+            amountCurrency: 'AED',
+            amountInBase: 20000
+          }
+        ],
+        overheadExpenses: [
+          {
+            name: 'Developer Salary',
+            amount: 15000,
+            amountCurrency: 'AED',
+            amountInBase: 15000
+          },
+          {
+            name: 'Office Rent',
+            amount: 8000,
+            amountCurrency: 'AED',
+            amountInBase: 8000
+          }
+        ],
+        generalExpenses: [
+          {
+            name: 'Software Subscriptions',
+            amount: 2000,
+            amountCurrency: 'AED',
+            amountInBase: 2000
+          },
+          {
+            name: 'Marketing',
+            amount: 3000,
+            amountCurrency: 'AED',
+            amountInBase: 3000
+          }
+        ]
+      });
+      
+      await sampleMonthlyPlanning.save();
+      console.log('✅ Sample monthly planning created');
     }
   } catch (error) {
     console.error('❌ Error initializing database:', error);
