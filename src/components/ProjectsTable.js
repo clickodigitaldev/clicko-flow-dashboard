@@ -223,278 +223,280 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
   };
 
   // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target)) {
-        setActiveActionMenu(null);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (actionMenuRef.current && !actionMenuRef.current.contains(event.target)) {
+  //       setActiveActionMenu(null);
+  //     }
+  //   };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, []);
 
   return (
     <>
-      {/* Filters */}
-      <div className="p-6 border-b border-white border-opacity-20">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white opacity-60 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by client, project ID, or project name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
+      <div className="glass-card">
+        {/* Filters */}
+        <div className="p-6 border-b border-white border-opacity-20">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white opacity-60 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search by client, project ID, or project name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
             </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="All">All Status</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Pending">Pending</option>
+            </select>
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="All">All Priority</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="All">All Status</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="Pending">Pending</option>
-          </select>
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="All">All Priority</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
         </div>
-      </div>
-      
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-white border-opacity-20">
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-20" onClick={() => handleSort('projectId')}>
-                ID
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-48">
-                PROJECT
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-32" onClick={() => handleSort('totalAmount')}>
-                TOTAL AMOUNT
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-32">
-                DEPOSIT PAID
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-32">
-                REMAINING
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-32" onClick={() => handleSort('expectedCompletion')}>
-                DUE DATE
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-24" onClick={() => handleSort('status')}>
-                STATUS
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-24">
-                PROGRESS
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-24" onClick={() => handleSort('priority')}>
-                PRIORITY
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-24">
-                ACTIONS
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white divide-opacity-10">
-            {sortedProjects.map((project, index) => {
-              // Convert amounts from base currency to current currency for display
-              const totalAmount = convertFromBase(project.totalAmountInBase || project.totalAmount || 0);
-              const depositPaid = convertFromBase(project.depositPaidInBase || project.depositPaid || 0);
-              const remainingPayment = totalAmount - depositPaid;
-              
-              return (
-                <tr key={project.projectId} className="hover:bg-white hover:bg-opacity-5 transition-all duration-200">
-                  <td className="px-4 py-4 whitespace-nowrap w-20">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white opacity-60"></div>
-                      <span className="text-sm font-medium text-white">{project.projectId}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-white">{project.projectName || 'N/A'}</div>
-                      <div className="text-xs text-white opacity-60">{project.clientName}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-white">{formatCurrency(totalAmount)}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm text-white opacity-90">{formatCurrency(depositPaid)}</div>
-                      <div className="text-xs text-white opacity-60">
-                        {project.depositDate ? format(new Date(project.depositDate), 'MMM dd, yyyy') : 'N/A'}
+        
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white border-opacity-20">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-20" onClick={() => handleSort('projectId')}>
+                  ID
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-48">
+                  PROJECT
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-32" onClick={() => handleSort('totalAmount')}>
+                  TOTAL AMOUNT
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-32">
+                  DEPOSIT PAID
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-32">
+                  REMAINING
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-32" onClick={() => handleSort('expectedCompletion')}>
+                  DUE DATE
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-24" onClick={() => handleSort('status')}>
+                  STATUS
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-24">
+                  PROGRESS
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider cursor-pointer hover:text-opacity-80 transition-colors w-24" onClick={() => handleSort('priority')}>
+                  PRIORITY
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-24">
+                  ACTIONS
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white divide-opacity-10">
+              {sortedProjects.map((project, index) => {
+                // Convert amounts from base currency to current currency for display
+                const totalAmount = convertFromBase(project.totalAmountInBase || project.totalAmount || 0);
+                const depositPaid = convertFromBase(project.depositPaidInBase || project.depositPaid || 0);
+                const remainingPayment = totalAmount - depositPaid;
+                
+                return (
+                  <tr key={project.projectId} className="hover:bg-white hover:bg-opacity-5 transition-all duration-200">
+                    <td className="px-4 py-4 whitespace-nowrap w-20">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-white opacity-60"></div>
+                        <span className="text-sm font-medium text-white">{project.projectId}</span>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-white">{formatCurrency(remainingPayment)}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-white opacity-90">{format(new Date(project.expectedCompletion), 'MMM dd, yyyy')}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`status-badge ${getStatusClass(project)}`}>
-                      {project.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full" 
-                          style={{ width: `${Math.round(project.progress || 0)}%` }}
-                        ></div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-white">{project.projectName || 'N/A'}</div>
+                        <div className="text-xs text-white opacity-60">{project.clientName}</div>
                       </div>
-                      <span className="text-sm text-secondary">{Math.round(project.progress || 0)}%</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`status-badge ${getPriorityClass(project.priority)}`}>
-                      {project.priority}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="relative" ref={actionMenuRef}>
-                      <button 
-                        onClick={() => {
-                          console.log('🔄 Three dots clicked for project:', project.projectId);
-                          toggleActionMenu(project.projectId);
-                        }}
-                        className="p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors text-white cursor-pointer"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                      
-                      {activeActionMenu === project.projectId && (
-                        <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-black bg-opacity-95 backdrop-blur-xl border border-white border-opacity-40 shadow-2xl rounded-lg">
-                          <div className="py-2">
-                            <button
-                              onClick={() => handleCheckStatus(project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-blue-500 bg-opacity-30 flex items-center justify-center mr-3 border border-blue-400 border-opacity-30">
-                                <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium">Check Status</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handlePushProject(project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-green-500 bg-opacity-30 flex items-center justify-center mr-3 border border-green-400 border-opacity-30">
-                                <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium">Push Project</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleSendReminder(project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-yellow-500 bg-opacity-30 flex items-center justify-center mr-3 border border-yellow-400 border-opacity-30">
-                                <svg className="w-5 h-5 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 7H4v5l5-5z" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium">Send Reminder</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleFollowupComplete(project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-purple-500 bg-opacity-30 flex items-center justify-center mr-3 border border-purple-400 border-opacity-30">
-                                <svg className="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium">Followup Complete</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleAddDeposit(project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-emerald-500 bg-opacity-30 flex items-center justify-center mr-3 border border-emerald-400 border-opacity-30">
-                                <svg className="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium">Add Deposit</span>
-                            </button>
-                            
-                            <div className="border-t border-white border-opacity-20 my-2"></div>
-                            
-                            <button
-                              onClick={() => handleComplete(project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-green-600 bg-opacity-30 flex items-center justify-center mr-3 border border-green-500 border-opacity-30">
-                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium">Complete</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleEdit(project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-blue-600 bg-opacity-30 flex items-center justify-center mr-3 border border-blue-500 border-opacity-30">
-                                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium">Edit</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleDelete(project)}
-                              className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-red-500 bg-opacity-30 flex items-center justify-center mr-3 border border-red-400 border-opacity-30">
-                                <svg className="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-medium text-red-300">Delete</span>
-                            </button>
-                          </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-semibold text-white">{formatCurrency(totalAmount)}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm text-white opacity-90">{formatCurrency(depositPaid)}</div>
+                        <div className="text-xs text-white opacity-60">
+                          {project.depositDate ? format(new Date(project.depositDate), 'MMM dd, yyyy') : 'N/A'}
                         </div>
-                      )}
-                      
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-white">{formatCurrency(remainingPayment)}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-white opacity-90">{format(new Date(project.expectedCompletion), 'MMM dd, yyyy')}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`status-badge ${getStatusClass(project)}`}>
+                        {project.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
+                          <div 
+                            className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full" 
+                            style={{ width: `${Math.round(project.progress || 0)}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-secondary">{Math.round(project.progress || 0)}%</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`status-badge ${getPriorityClass(project.priority)}`}>
+                        {project.priority}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="relative" ref={actionMenuRef}>
+                        <button 
+                          onClick={() => {
+                            console.log('🔄 Three dots clicked for project:', project.projectId);
+                            toggleActionMenu(project.projectId);
+                          }}
+                          className="p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors text-white cursor-pointer"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                        
+                        {activeActionMenu === project.projectId && (
+                          <div className="absolute right-0 top-full mt-2 w-64 z-50 bg-black bg-opacity-95 backdrop-blur-xl border border-white border-opacity-40 shadow-2xl rounded-lg">
+                            <div className="py-2">
+                              <button
+                                onClick={() => handleCheckStatus(project)}
+                                className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-blue-500 bg-opacity-30 flex items-center justify-center mr-3 border border-blue-400 border-opacity-30">
+                                  <svg className="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium">Check Status</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handlePushProject(project)}
+                                className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-green-500 bg-opacity-30 flex items-center justify-center mr-3 border border-green-400 border-opacity-30">
+                                  <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium">Push Project</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleSendReminder(project)}
+                                className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-yellow-500 bg-opacity-30 flex items-center justify-center mr-3 border border-yellow-400 border-opacity-30">
+                                  <svg className="w-5 h-5 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM9 7H4v5l5-5z" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium">Send Reminder</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleFollowupComplete(project)}
+                                className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-purple-500 bg-opacity-30 flex items-center justify-center mr-3 border border-purple-400 border-opacity-30">
+                                  <svg className="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium">Followup Complete</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleAddDeposit(project)}
+                                className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-emerald-500 bg-opacity-30 flex items-center justify-center mr-3 border border-emerald-400 border-opacity-30">
+                                  <svg className="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium">Add Deposit</span>
+                              </button>
+                              
+                              <div className="border-t border-white border-opacity-20 my-2"></div>
+                              
+                              <button
+                                onClick={() => handleComplete(project)}
+                                className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-green-600 bg-opacity-30 flex items-center justify-center mr-3 border border-green-500 border-opacity-30">
+                                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium">Complete</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleEdit(project)}
+                                className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-blue-600 bg-opacity-30 flex items-center justify-center mr-3 border border-blue-500 border-opacity-30">
+                                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium">Edit</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleDelete(project)}
+                                className="flex items-center w-full px-3 py-2.5 text-left hover:bg-white hover:bg-opacity-10 transition-all duration-200 text-white cursor-pointer"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-red-500 bg-opacity-30 flex items-center justify-center mr-3 border border-red-400 border-opacity-30">
+                                  <svg className="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium text-red-300">Delete</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
       
       {/* Modals - Outside main container for proper overlay rendering */}

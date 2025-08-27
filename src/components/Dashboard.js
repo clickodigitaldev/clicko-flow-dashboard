@@ -219,14 +219,13 @@ const Dashboard = () => {
                 </span>
               </div>
             </div>
-            <div className="glass-card">
+            
               <ProjectsTable 
                 projects={projects} 
                 onUpdateProject={handleUpdateProject} 
                 activeFilter={activeFilter}
                 currentMonth={currentMonth}
               />
-            </div>
           </div>
         </main>
       </div>
