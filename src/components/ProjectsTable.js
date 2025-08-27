@@ -238,7 +238,7 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
 
   return (
     <div>
-      <div className="glass-card">
+      <div>
         {/* Filters */}
         <div className="p-6 border-b border-white border-opacity-20">
           <div className="flex flex-col md:flex-row gap-4">

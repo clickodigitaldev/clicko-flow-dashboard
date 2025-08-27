@@ -288,7 +288,7 @@ const ProjectsPage = () => {
               <p className="text-white text-sm mt-2">Using fallback data</p>
             </div>
           ) : (
-            <div className="glass-card">
+            <div>
               <ProjectsTable
                 projects={filteredProjects}
                 onUpdateProject={handleUpdateProject}
