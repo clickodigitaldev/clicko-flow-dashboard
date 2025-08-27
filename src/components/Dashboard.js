@@ -220,12 +220,12 @@ const Dashboard = () => {
               </div>
             </div>
             
-              <ProjectsTable 
-                projects={projects} 
-                onUpdateProject={handleUpdateProject} 
-                activeFilter={activeFilter}
-                currentMonth={currentMonth}
-              />
+            <ProjectsTable 
+              projects={projects} 
+              onUpdateProject={handleUpdateProject} 
+              activeFilter={activeFilter}
+              currentMonth={currentMonth}
+            />
           </div>
         </main>
       </div>
