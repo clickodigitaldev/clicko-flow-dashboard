@@ -237,7 +237,7 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
   // }, []);
 
   return (
-    <>
+    <div>
       <div className="glass-card">
         {/* Filters */}
         <div className="p-6 border-b border-white border-opacity-20">
@@ -534,7 +534,7 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
