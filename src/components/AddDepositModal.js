@@ -122,8 +122,8 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
               <label className="block text-white text-sm font-medium mb-2">
                 Amount *
               </label>
-              <div className="flex space-x-2">
-                <div className="relative flex-1">
+              <div className="flex space-x-2 items-stretch">
+                <div className="relative flex-[3]"><!-- wider input -->
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-60 w-4 h-4" />
                   <input
                     type="number"
@@ -141,7 +141,7 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
                   name="amountCurrency"
                   value={formData.amountCurrency}
                   onChange={handleInputChange}
-                  className="modern-select w-24"
+                  className="modern-select w-20 flex-[1]"
                 >
                   {currencies.map(currency => (
                     <option key={currency.code} value={currency.code}>

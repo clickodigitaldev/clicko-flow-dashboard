@@ -124,7 +124,8 @@ const ProjectsPage = () => {
       showNotification('Project deleted successfully!');
       } else {
         // Project was updated
-        const updatedProjectFromDB = await projectService.updateProject(projectId, updatedProject);
+        // Use Mongo _id for API update to match backend expectations
+        const updatedProjectFromDB = await projectService.updateProject(updatedProject._id, updatedProject);
         setProjects(projects.map(p => p.projectId === projectId ? updatedProjectFromDB : p));
         showNotification('Project updated successfully!');
       }
