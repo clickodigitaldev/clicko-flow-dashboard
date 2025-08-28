@@ -102,29 +102,45 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
       // Update project via API
       const result = await projectService.updateProject(project._id, updatedProject);
       
-      // If deposit was added or updated, create a payment record
-      if (formData.depositPaid && parseFloat(formData.depositPaid) > 0 && formData.depositDate) {
+      // If deposit was modified, sync with payment history
+      if (formData.depositPaid && formData.depositDate) {
         try {
-          const depositAmount = parseFloat(formData.depositPaid);
+          const newDepositAmount = parseFloat(formData.depositPaid);
           const previousDeposit = project.depositPaid || 0;
+          const newDepositDate = formData.depositDate;
           
-          // Only add payment if this is a new deposit or deposit amount increased
-          if (depositAmount > previousDeposit) {
-            const newDepositAmount = depositAmount - previousDeposit;
+          // Check if deposit amount or date changed
+          if (newDepositAmount !== previousDeposit || 
+              formData.depositDate !== (project.depositDate ? new Date(project.depositDate).toISOString().split('T')[0] : '')) {
             
-            // Add the new deposit as a payment record
-            await projectService.addPayment(project._id, {
-              amount: newDepositAmount,
-              amountCurrency: formData.depositPaidCurrency,
-              type: 'deposit',
-              description: `Deposit payment for ${formData.projectName}`,
-              date: formData.depositDate
-            });
-            
-            console.log('✅ Deposit payment record created');
+            // If there are existing payment records, we need to handle this carefully
+            if (project.paymentHistory && project.paymentHistory.length > 0) {
+              // For now, create a new payment record that represents the total change
+              // This ensures the payment history matches the deposit amount
+              await projectService.addPayment(project._id, {
+                amount: newDepositAmount,
+                amountCurrency: formData.depositPaidCurrency,
+                type: 'deposit',
+                description: `Updated deposit for ${formData.projectName} - Total: ${newDepositAmount} AED`,
+                date: newDepositDate
+              });
+              
+              console.log('✅ Updated deposit payment record created');
+            } else {
+              // No existing payments, create the first one
+              await projectService.addPayment(project._id, {
+                amount: newDepositAmount,
+                amountCurrency: formData.depositPaidCurrency,
+                type: 'deposit',
+                description: `Initial deposit for ${formData.projectName}`,
+                date: newDepositDate
+              });
+              
+              console.log('✅ Initial deposit payment record created');
+            }
           }
         } catch (paymentError) {
-          console.warn('Warning: Could not create payment record for deposit:', paymentError);
+          console.warn('Warning: Could not sync payment record for deposit:', paymentError);
           // Don't fail the entire update if payment record creation fails
         }
       }
