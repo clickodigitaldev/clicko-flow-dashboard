@@ -123,7 +123,7 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
                 Amount *
               </label>
               <div className="flex space-x-2 items-stretch">
-                <div className="relative flex-[3]"><!-- wider input -->
+                <div className="relative flex-[3]">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-60 w-4 h-4" />
                   <input
                     type="number"
