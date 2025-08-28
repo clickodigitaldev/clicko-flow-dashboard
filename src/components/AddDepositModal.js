@@ -9,7 +9,6 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
     amount: '',
     amountCurrency: 'AED', // Will be set to current currency
     type: 'deposit',
-    description: '',
     date: new Date().toISOString().split('T')[0]
   });
 
@@ -40,8 +39,8 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
 
     try {
       // Validate required fields
-      if (!formData.amount || !formData.description) {
-        throw new Error('Please fill in all required fields');
+      if (!formData.amount) {
+        throw new Error('Please enter the amount');
       }
 
       const amount = parseFloat(formData.amount);
@@ -54,7 +53,7 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
         amount,
         amountCurrency: formData.amountCurrency,
         type: formData.type,
-        description: formData.description,
+        description: 'Payment added via dashboard',
         date: formData.date
       });
       
@@ -186,20 +185,7 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
               </div>
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-white text-sm font-medium mb-2">
-                Description *
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                className="modern-input w-full h-20 resize-none"
-                placeholder="Payment description..."
-                required
-              />
-            </div>
+
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">

@@ -312,7 +312,7 @@ router.post('/:id/payments', async (req, res) => {
       amount,
       amountCurrency,
       amountInBase,
-      date: new Date(),
+      date: req.body.date ? new Date(req.body.date) : new Date(),
       type,
       description
     });
