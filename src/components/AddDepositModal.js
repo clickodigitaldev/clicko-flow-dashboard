@@ -9,20 +9,22 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
     amount: '',
     amountCurrency: 'AED', // Will be set to current currency
     type: 'deposit',
-    date: new Date().toISOString().split('T')[0]
+    description: '',
+    date: project?.depositDate ? new Date(project.depositDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
   });
 
   const currencies = getAvailableCurrencies();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Update currency when modal opens or current currency changes
+  // Update currency and date when modal opens or current currency changes
   React.useEffect(() => {
     setFormData(prev => ({
       ...prev,
-      amountCurrency: currentCurrency
+      amountCurrency: currentCurrency,
+      date: project?.depositDate ? new Date(project.depositDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     }));
-  }, [currentCurrency]);
+  }, [currentCurrency, project]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -39,8 +41,8 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
 
     try {
       // Validate required fields
-      if (!formData.amount) {
-        throw new Error('Please enter the amount');
+      if (!formData.amount || !formData.description) {
+        throw new Error('Please fill in all required fields');
       }
 
       const amount = parseFloat(formData.amount);
@@ -53,7 +55,7 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
         amount,
         amountCurrency: formData.amountCurrency,
         type: formData.type,
-        description: 'Payment added via dashboard',
+        description: formData.description,
         date: formData.date
       });
       
@@ -185,7 +187,20 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
               </div>
             </div>
 
-
+            {/* Description */}
+            <div>
+              <label className="block text-white text-sm font-medium mb-2">
+                Description *
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                className="modern-input w-full h-20 resize-none"
+                placeholder="Payment description..."
+                required
+              />
+            </div>
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
