@@ -9,7 +9,6 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
     clientName: '',
     projectName: '',
-    description: '',
     category: 'Web Development',
     totalAmount: '',
     totalAmountCurrency: 'AED',
@@ -43,7 +42,6 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
       setFormData({
         clientName: project.clientName || '',
         projectName: project.projectName || '',
-        description: project.description || '',
         category: project.category || 'Web Development',
         totalAmount: project.totalAmount || '',
         totalAmountCurrency: project.totalAmountCurrency || 'AED',
@@ -85,7 +83,6 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
         ...project,
         projectName: formData.projectName,
         clientName: formData.clientName,
-        description: formData.description,
         category: formData.category,
         totalAmount: parseFloat(formData.totalAmount),
         totalAmountCurrency: formData.totalAmountCurrency,
@@ -104,6 +101,33 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
 
       // Update project via API
       const result = await projectService.updateProject(project._id, updatedProject);
+      
+      // If deposit was added or updated, create a payment record
+      if (formData.depositPaid && parseFloat(formData.depositPaid) > 0 && formData.depositDate) {
+        try {
+          const depositAmount = parseFloat(formData.depositPaid);
+          const previousDeposit = project.depositPaid || 0;
+          
+          // Only add payment if this is a new deposit or deposit amount increased
+          if (depositAmount > previousDeposit) {
+            const newDepositAmount = depositAmount - previousDeposit;
+            
+            // Add the new deposit as a payment record
+            await projectService.addPayment(project._id, {
+              amount: newDepositAmount,
+              amountCurrency: formData.depositPaidCurrency,
+              type: 'deposit',
+              description: `Deposit payment for ${formData.projectName}`,
+              date: formData.depositDate
+            });
+            
+            console.log('✅ Deposit payment record created');
+          }
+        } catch (paymentError) {
+          console.warn('Warning: Could not create payment record for deposit:', paymentError);
+          // Don't fail the entire update if payment record creation fails
+        }
+      }
       
       // Call parent callback
       onUpdate(result);
@@ -183,19 +207,7 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-secondary mb-2">
-              <FileText className="w-4 h-4 inline mr-2" />
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="modern-input w-full h-20 resize-none"
-              placeholder="Enter project description"
-            />
-          </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
