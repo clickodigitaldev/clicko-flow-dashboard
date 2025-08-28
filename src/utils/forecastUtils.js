@@ -12,8 +12,36 @@ export const getFinancialSummary = (projects, currentMonth, settings) => {
   // Get current month date for calculations
   const currentMonthDate = new Date(currentMonth);
   
-  // Filter projects for current month (projects that are due this month)
-  const currentMonthProjects = projects.filter(p => p.monthOfPayment === currentMonth);
+  // Filter projects with activity in current month:
+  // 1. Projects that started this month
+  // 2. Projects with deposits received this month
+  // 3. Projects due this month
+  // 4. Ongoing projects (for progress tracking)
+  const currentMonthProjects = projects.filter(project => {
+    const projectStartDate = project.expectedStartDate ? parseISO(project.expectedStartDate) : null;
+    const projectDueDate = project.expectedCompletion ? parseISO(project.expectedCompletion) : null;
+    const depositDate = project.depositDate ? parseISO(project.depositDate) : null;
+    
+    // Check if project started this month
+    const startedThisMonth = projectStartDate && 
+      isSameMonth(projectStartDate, currentMonthDate) && 
+      isSameYear(projectStartDate, currentMonthDate);
+    
+    // Check if deposit was received this month
+    const depositReceivedThisMonth = depositDate && 
+      isSameMonth(depositDate, currentMonthDate) && 
+      isSameYear(depositDate, currentMonthDate);
+    
+    // Check if project is due this month
+    const dueThisMonth = project.monthOfPayment === currentMonth;
+    
+    // Check if project is ongoing (started before this month and not completed)
+    const isOngoing = projectStartDate && 
+      projectStartDate < currentMonthDate && 
+      project.status !== 'Completed';
+    
+    return startedThisMonth || depositReceivedThisMonth || dueThisMonth || isOngoing;
+  });
   
   // Calculate deposits received in current month (Revenue this month)
   // Rule: If deposit date is this month → count deposit under "Revenue this month"

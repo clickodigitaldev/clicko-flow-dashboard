@@ -81,7 +81,32 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
     );
   }
 
-  const currentMonthProjects = projects.filter(p => p.monthOfPayment === currentMonth);
+  // Filter projects with activity in current month (same logic as forecastUtils)
+  const currentMonthProjects = projects.filter(project => {
+    const projectStartDate = project.expectedStartDate ? new Date(project.expectedStartDate) : null;
+    const depositDate = project.depositDate ? new Date(project.depositDate) : null;
+    const currentMonthDate = new Date(currentMonth);
+    
+    // Check if project started this month
+    const startedThisMonth = projectStartDate && 
+      projectStartDate.getMonth() === currentMonthDate.getMonth() && 
+      projectStartDate.getFullYear() === currentMonthDate.getFullYear();
+    
+    // Check if deposit was received this month
+    const depositReceivedThisMonth = depositDate && 
+      depositDate.getMonth() === currentMonthDate.getMonth() && 
+      depositDate.getFullYear() === currentMonthDate.getFullYear();
+    
+    // Check if project is due this month
+    const dueThisMonth = project.monthOfPayment === currentMonth;
+    
+    // Check if project is ongoing (started before this month and not completed)
+    const isOngoing = projectStartDate && 
+      projectStartDate < currentMonthDate && 
+      project.status !== 'Completed';
+    
+    return startedThisMonth || depositReceivedThisMonth || dueThisMonth || isOngoing;
+  });
   
   // Use database forecast data for calculations
   const totalProjects = currentMonthProjects.length;
