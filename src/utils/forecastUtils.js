@@ -53,23 +53,36 @@ export const getFinancialSummary = (projects, currentMonth, settings) => {
     return total;
   }, 0);
 
+  // Also include projects that are due this month but might not have deposits received this month
+  const projectsDueThisMonth = projects.filter(project => {
+    return project.monthOfPayment === currentMonth && project.status !== 'Completed';
+  });
+
+  const totalExpectedPayments = projectsDueThisMonth.reduce((total, project) => {
+    const remainingPayment = project.totalAmount - project.depositPaid;
+    return total + remainingPayment;
+  }, 0);
+
   // Calculate total deal value for current month
   const totalDealValue = currentMonthProjects.reduce((sum, p) => sum + p.totalAmount, 0);
 
   // Calculate total deposits for current month projects (regardless of when received)
   const totalDepositsForCurrentMonth = currentMonthProjects.reduce((sum, p) => sum + p.depositPaid, 0);
 
+  // Calculate total deal value for projects due this month
+  const totalDealValueForDueProjects = projectsDueThisMonth.reduce((sum, p) => sum + p.totalAmount, 0);
+
   // Calculate KPIs
-  const totalProjects = currentMonthProjects.length;
-  const completedProjects = currentMonthProjects.filter(p => p.status === 'Completed').length;
+  const totalProjects = projectsDueThisMonth.length; // Projects due this month
+  const completedProjects = projectsDueThisMonth.filter(p => p.status === 'Completed').length;
   const completionRate = totalProjects > 0 ? ((completedProjects / totalProjects) * 100) : 0;
-  const depositRate = totalDealValue > 0 ? ((totalDepositsForCurrentMonth / totalDealValue) * 100) : 0;
+  const depositRate = totalDealValueForDueProjects > 0 ? ((totalDepositsForCurrentMonth / totalDealValueForDueProjects) * 100) : 0;
 
   // Calculate break-even analysis
   const totalExpenses = settings.overheadExpenses + settings.generalExpenses;
   
-  // Total monthly revenue = deposits received this month + expected payments
-  const monthlyRevenue = depositsReceivedThisMonth + expectedPayments;
+  // Total monthly revenue = deposits received this month + expected payments for projects due this month
+  const monthlyRevenue = depositsReceivedThisMonth + totalExpectedPayments;
   
   // Check if break-even is achieved
   const isBreakEvenAchieved = monthlyRevenue >= totalExpenses;
@@ -95,8 +108,8 @@ export const getFinancialSummary = (projects, currentMonth, settings) => {
     // Financial KPIs
     depositsReceived: depositsReceivedThisMonth,
     totalDepositsForCurrentMonth,
-    expectedPayments,
-    totalDealValue,
+    expectedPayments: totalExpectedPayments,
+    totalDealValue: totalDealValueForDueProjects,
     depositRate: depositRate.toFixed(1),
     
     // Revenue and Target KPIs
