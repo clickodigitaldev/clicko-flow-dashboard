@@ -80,7 +80,7 @@ async function createNiftyProject(accessToken, projectData) {
         description: projectData.description || `Project created from Salesmate deal: ${projectData.title}`,
         subteam_id: "leq_exMcRwvMH",
         access_type: 'public',
-        template_id: 'i!7IS820UlgK1'
+        template_id: 'JJJ1TSXLiYY1'
       }),
     });
 
@@ -153,6 +153,7 @@ router.post('/salesmate', upload.any(), async (req, res) => {
       closeDate,
       companyName,
       dealValue,
+      dealCurrency,
       dueDate,
       id,
       startDate,
@@ -189,7 +190,7 @@ router.post('/salesmate', upload.any(), async (req, res) => {
     
     // Convert deal value to number
     const totalAmount = parseFloat(dealValue);
-    const totalAmountCurrency = 'AED'; // Default to AED
+    const totalAmountCurrency = dealCurrency?.toUpperCase() || 'AED'; // Default to AED
     const totalAmountInBase = currencyService.convertToBase(totalAmount, totalAmountCurrency);
 
     // Parse dates

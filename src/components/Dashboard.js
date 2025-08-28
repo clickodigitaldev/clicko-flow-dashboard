@@ -7,7 +7,7 @@ import ProjectsTable from './ProjectsTable';
 import AlertsSection from './AlertsSection';
 import Charts from './Charts';
 import CurrencySwitcher from './CurrencySwitcher';
-import { getFinancialSummary, getActiveProjectsForTable } from '../utils/forecastUtils';
+import { getFinancialSummary } from '../utils/forecastUtils';
 import projectService from '../services/projectService';
 import { useCurrency } from '../contexts/CurrencyContext';
 
@@ -54,7 +54,6 @@ const Dashboard = () => {
   };
 
   const financialSummary = getFinancialSummary(projects, currentMonth, settings);
-  const activeProjectsForTable = getActiveProjectsForTable(projects, currentMonth);
 
   if (loading) {
     return (
@@ -216,13 +215,13 @@ const Dashboard = () => {
               <h2 className="text-xl font-bold text-primary">Projects Overview</h2>
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-secondary">
-                  Showing {activeProjectsForTable.length} active projects for {currentMonth}
+                  Showing {projects.filter(p => p.monthOfPayment === currentMonth).length} projects for {currentMonth}
                 </span>
               </div>
             </div>
             
             <ProjectsTable 
-              projects={activeProjectsForTable} 
+              projects={projects} 
               onUpdateProject={handleUpdateProject} 
               activeFilter={activeFilter}
               currentMonth={currentMonth}

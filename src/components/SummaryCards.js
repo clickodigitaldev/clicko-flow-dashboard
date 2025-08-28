@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, Calendar, Target, TrendingDown, PiggyBank } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
 import monthlyPlanningService from '../services/monthlyPlanningService';
+import { getDepositsReceivedInMonth, getPaymentsDueInMonth, isProjectVisibleInMonth } from '../utils/forecastUtils';
 
 const SummaryCards = ({ projects, currentMonth, settings }) => {
   const [forecastData, setForecastData] = useState(null);
@@ -81,32 +82,8 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
     );
   }
 
-  // Filter projects with activity in current month (same logic as forecastUtils)
-  const currentMonthProjects = projects.filter(project => {
-    const projectStartDate = project.expectedStartDate ? new Date(project.expectedStartDate) : null;
-    const depositDate = project.depositDate ? new Date(project.depositDate) : null;
-    const currentMonthDate = new Date(currentMonth);
-    
-    // Check if project started this month
-    const startedThisMonth = projectStartDate && 
-      projectStartDate.getMonth() === currentMonthDate.getMonth() && 
-      projectStartDate.getFullYear() === currentMonthDate.getFullYear();
-    
-    // Check if deposit was received this month
-    const depositReceivedThisMonth = depositDate && 
-      depositDate.getMonth() === currentMonthDate.getMonth() && 
-      depositDate.getFullYear() === currentMonthDate.getFullYear();
-    
-    // Check if project is due this month
-    const dueThisMonth = project.monthOfPayment === currentMonth;
-    
-    // Check if project is ongoing (started before this month and not completed)
-    const isOngoing = projectStartDate && 
-      projectStartDate < currentMonthDate && 
-      project.status !== 'Completed';
-    
-    return startedThisMonth || depositReceivedThisMonth || dueThisMonth || isOngoing;
-  });
+  // Filter projects for current month (start date OR due date)
+  const currentMonthProjects = projects.filter(p => isProjectVisibleInMonth(p, currentMonth));
   
   // Use database forecast data for calculations
   const totalProjects = currentMonthProjects.length;
@@ -126,13 +103,13 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
   const expectedRevenue = convertFromBase(expectedRevenueInBase);
   const totalExpenses = convertFromBase(totalExpensesInBase);
   
-  // Use project data for deposits (actual received money) - convert from base currency
-  const totalDepositsInBase = currentMonthProjects.reduce((sum, p) => sum + (p.depositPaidInBase || p.depositPaid || 0), 0);
-  const totalDeposits = convertFromBase(totalDepositsInBase);
+  // Calculate deposits received in current month using new logic
+  const depositsReceivedInBase = getDepositsReceivedInMonth(projects, currentMonth);
+  const totalDeposits = convertFromBase(depositsReceivedInBase);
   
-  // Expected Payments = remaining payments from projects (Due in this month) - convert from base currency
-  const totalExpectedPaymentsInBase = currentMonthProjects.reduce((sum, p) => sum + ((p.totalAmountInBase || p.totalAmount || 0) - (p.depositPaidInBase || p.depositPaid || 0)), 0);
-  const totalExpectedPayments = convertFromBase(totalExpectedPaymentsInBase);
+  // Calculate payments due in current month using new logic
+  const paymentsDueInBase = getPaymentsDueInMonth(projects, currentMonth);
+  const totalExpectedPayments = convertFromBase(paymentsDueInBase);
   
   // Target Achievement = (Deposits received / Expected Revenue from forecast) * 100
   const targetAchievement = expectedRevenue > 0 ? Math.round((totalDeposits / expectedRevenue) * 100) : 0;
@@ -223,59 +200,59 @@ const SummaryCards = ({ projects, currentMonth, settings }) => {
       title: "Estimated Profit",
       value: `${formatCurrency(estimatedProfit)}`,
       icon: <PiggyBank className="w-6 h-6" />,
-      gradient: isProfitPositive ? "gradient-card-green" : "gradient-card-orange",
-      glow: isProfitPositive ? "glow-green" : "glow-orange",
+      gradient: isProfitPositive ? "gradient-card-green" : "gradient-card-red",
+      glow: isProfitPositive ? "glow-green" : "glow-red",
       delay: "500ms",
-      color: isProfitPositive ? "#10b981" : "#f97316",
-      showProgress: true,
-      progressValue: isProfitPositive ? 100 : Math.min(100, Math.abs(estimatedProfit) / totalExpenses * 100),
-      progressLabel: "Profit Status",
-      subtitle: isProfitPositive ? "Profit earned 🎉" : "Loss incurred"
+      color: isProfitPositive ? "#10b981" : "#ef4444",
+      showProgress: false,
+      subtitle: isProfitPositive ? "Positive cash flow" : "Negative cash flow"
     }
   ];
 
   return (
-    <div className="widget-grid">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {cards.map((card, index) => (
-        <div 
-          key={index} 
-          className={`glass-card glass-card-hover p-6 animate-fade-in-up ${card.glow}`}
+        <div
+          key={index}
+          className={`glass-card p-6 ${card.gradient} ${card.glow} animate-fade-in-up`}
           style={{ animationDelay: card.delay }}
         >
           <div className="flex items-center justify-between mb-4">
-            <div className={`icon-container ${card.gradient} text-white`}>
-              {card.icon}
+            <div className="flex items-center space-x-3">
+              <div 
+                className="p-3 rounded-lg bg-white bg-opacity-10 backdrop-blur-sm"
+                style={{ color: card.color }}
+              >
+                {card.icon}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">{card.title}</h3>
+                <p className="text-sm text-white opacity-70">{card.subtitle}</p>
+              </div>
             </div>
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: card.color, opacity: 0.6 }}></div>
           </div>
           
-          <div className="space-y-3">
-            <p className="text-white text-sm font-medium opacity-90">{card.title}</p>
-            <p className="text-3xl font-bold text-white">
-              {card.value}
-            </p>
-            
-            {/* Show subtitle for all cards */}
-            {card.subtitle && (
-              <p className="text-white text-sm opacity-70">{card.subtitle}</p>
-            )}
-            
-            {/* Show progress bar for all cards */}
+          <div className="mb-4">
+            <div className="text-3xl font-bold text-white mb-2">{card.value}</div>
             {card.showProgress && (
-              <>
-                <div className="w-full bg-white bg-opacity-10 rounded-full h-2 mt-2">
-                  <div 
-                    className={`h-2 rounded-full ${card.gradient}`}
-                    style={{ width: `${Math.min(100, parseFloat(card.progressValue))}%` }}
-                  ></div>
-                </div>
-                <div className="flex justify-between text-xs text-white opacity-70 mt-1">
-                  <span>{card.progressLabel}</span>
-                  <span>{card.progressValue}%</span>
-                </div>
-              </>
+              <div className="w-full bg-white bg-opacity-20 rounded-full h-2">
+                <div 
+                  className="h-2 rounded-full transition-all duration-500"
+                  style={{ 
+                    width: `${card.progressValue}%`,
+                    backgroundColor: card.color
+                  }}
+                ></div>
+              </div>
             )}
           </div>
+          
+          {card.showProgress && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-white opacity-70">{card.progressLabel}</span>
+              <span className="text-white font-medium">{card.progressValue}%</span>
+            </div>
+          )}
         </div>
       ))}
     </div>

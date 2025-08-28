@@ -1,162 +1,147 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  DollarSign,
-  Users,
-  Clock,
-  CheckCircle
-} from 'lucide-react';
-import Sidebar from '../components/Sidebar';
-import CurrencySwitcher from '../components/CurrencySwitcher';
-import AddProjectModal from '../components/AddProjectModal';
-import ProjectsTable from '../components/ProjectsTable';
-import { projectCategories, projectStatuses, projectPriorities } from '../utils/constants';
-import projectService from '../services/projectService';
+import { Plus, Filter, Search, Calendar, DollarSign, Users, Target } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import projectService from '../services/projectService';
+import ProjectsTable from '../components/ProjectsTable';
+import AddProjectModal from '../components/AddProjectModal';
+import { isProjectVisibleInMonth } from '../utils/forecastUtils';
 
 const ProjectsPage = () => {
-  const { formatCurrency, convertFromBase } = useCurrency();
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
-  const [selectedPriority, setSelectedPriority] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+  const [currentMonth, setCurrentMonth] = useState('August 2025');
+  const { formatCurrency } = useCurrency();
 
-  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-
-  // Calculate statistics with currency conversion
-  const totalProjects = projects.length;
-  const completedProjects = projects.filter(p => p.status === 'Completed').length;
-  const inProgressProjects = projects.filter(p => p.status === 'In Progress').length;
-  
-  // Convert total revenue from base currency to current currency
-  const totalRevenueInBase = projects.reduce((sum, p) => sum + (p.totalAmountInBase || p.totalAmount || 0), 0);
-  const totalRevenue = convertFromBase(totalRevenueInBase);
-
-  // Load projects from database
   useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Try to get projects from database
-        const dbProjects = await projectService.getAllProjects();
-        
-        if (dbProjects && dbProjects.length > 0) {
-          console.log('✅ Loaded projects from database:', dbProjects.length);
-          setProjects(dbProjects);
-        } else {
-          console.log('⚠️ No projects in database');
-          setProjects([]);
-        }
-      } catch (error) {
-        console.error('❌ Error loading projects:', error);
-        setError(error.message);
-        setProjects([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProjects();
+    fetchProjects();
   }, []);
 
   useEffect(() => {
+    filterProjects();
+  }, [projects, searchTerm, statusFilter, priorityFilter, currentMonth]);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const data = await projectService.getProjects();
+      console.log('✅ Loaded projects from database:', data.length);
+      setProjects(data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterProjects = () => {
     let filtered = projects;
 
-    // Apply category filter
-    if (selectedCategory) {
-      filtered = filtered.filter(project => project.category === selectedCategory);
+    // Filter by current month (start date OR due date)
+    filtered = filtered.filter(project => isProjectVisibleInMonth(project, currentMonth));
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(project =>
+        project.projectName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.projectId?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
-    // Apply status filter
-    if (selectedStatus) {
-      filtered = filtered.filter(project => project.status === selectedStatus);
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter(project => project.status === statusFilter);
     }
 
-    // Apply priority filter
-    if (selectedPriority) {
-      filtered = filtered.filter(project => project.priority === selectedPriority);
+    // Filter by priority
+    if (priorityFilter) {
+      filtered = filtered.filter(project => project.priority === priorityFilter);
     }
 
     setFilteredProjects(filtered);
-  }, [projects, selectedCategory, selectedStatus, selectedPriority]);
-
-  const showNotification = (message, type = 'success') => {
-    setNotification({ show: true, message, type });
-    setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3000);
   };
 
   const handleAddProject = async (newProject) => {
     try {
-      const projectData = {
-      ...newProject,
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-      progress: 0,
-      milestones: []
-    };
-
-      // Save to database
-      const savedProject = await projectService.createProject(projectData);
-      
-      // Add to local state
-      setProjects([...projects, savedProject]);
-    setShowAddModal(false);
-    showNotification('Project added successfully!');
+      const addedProject = await projectService.addProject(newProject);
+      setProjects([...projects, addedProject]);
+      setShowAddModal(false);
     } catch (error) {
       console.error('Error adding project:', error);
-      showNotification('Failed to add project: ' + error.message, 'error');
     }
   };
-
-
 
   const handleUpdateProject = async (projectId, updatedProject) => {
     try {
       if (updatedProject === null) {
         // Project was deleted
         setProjects(projects.filter(p => p.projectId !== projectId));
-      showNotification('Project deleted successfully!');
       } else {
         // Project was updated
         // Use Mongo _id for API update to match backend expectations
         const updatedProjectFromDB = await projectService.updateProject(updatedProject._id, updatedProject);
         setProjects(projects.map(p => p.projectId === projectId ? updatedProjectFromDB : p));
-        showNotification('Project updated successfully!');
       }
     } catch (error) {
       console.error('Error updating project:', error);
-      showNotification('Failed to update project: ' + error.message, 'error');
     }
   };
 
+  // Calculate summary statistics for current month
+  const currentMonthProjects = projects.filter(p => isProjectVisibleInMonth(p, currentMonth));
+  const totalProjects = currentMonthProjects.length;
+  const completedProjects = currentMonthProjects.filter(p => p.status === 'Completed').length;
+  const totalValue = currentMonthProjects.reduce((sum, p) => sum + (p.totalAmount || 0), 0);
+  const totalDeposits = currentMonthProjects.reduce((sum, p) => sum + (p.depositPaid || 0), 0);
+
+  if (loading) {
+    return (
+      <div className="page-container gradient-bg">
+        <div className="main-content">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-white text-xl">Loading projects...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen gradient-bg">
-      <Sidebar />
-      
+    <div className="page-container gradient-bg">
       {/* Main Content */}
-      <div className="ml-64">
+      <div className="main-content">
         {/* Header */}
         <header className="modern-header sticky top-0 z-40">
           <div className="px-6 py-4">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-2xl font-bold text-primary">Projects Management</h1>
-                <p className="text-sm text-secondary">Manage all your projects and track progress</p>
+                <h1 className="text-2xl font-bold text-primary">Projects</h1>
+                <p className="text-sm text-secondary">Manage and track your projects</p>
               </div>
-              <div className="flex items-center space-x-4">
-                <CurrencySwitcher />
+              <div className="flex items-center space-x-6">
+                <select
+                  value={currentMonth}
+                  onChange={(e) => setCurrentMonth(e.target.value)}
+                  className="modern-select min-w-[140px]"
+                >
+                  <option value="August 2025">August 2025</option>
+                  <option value="September 2025">September 2025</option>
+                  <option value="October 2025">October 2025</option>
+                  <option value="November 2025">November 2025</option>
+                  <option value="December 2025">December 2025</option>
+                  <option value="January 2026">January 2026</option>
+                </select>
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="modern-button flex items-center"
+                  className="modern-button-primary flex items-center space-x-2"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Project
+                  <Plus className="w-4 h-4" />
+                  <span>Add Project</span>
                 </button>
               </div>
             </div>
@@ -164,164 +149,152 @@ const ProjectsPage = () => {
         </header>
 
         {/* Main Content */}
-        <main className="p-6">
-          {/* Statistics Widgets */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="glass-card p-4 glass-card-hover">
+        <main className="px-6 py-4">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-secondary">Total Projects</p>
-                  <p className="text-2xl font-bold text-primary">{totalProjects}</p>
+                  <p className="text-sm text-white opacity-70">Total Projects</p>
+                  <p className="text-2xl font-bold text-white">{totalProjects}</p>
                 </div>
-                <div className="icon-container">
-                  <Users className="w-5 h-5 text-blue-400" />
+                <div className="p-3 bg-blue-500 bg-opacity-20 rounded-lg">
+                  <Calendar className="w-6 h-6 text-blue-400" />
                 </div>
               </div>
             </div>
-            
-            <div className="glass-card p-4 glass-card-hover">
+
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-secondary">Completed</p>
-                  <p className="text-2xl font-bold text-green-400">{completedProjects}</p>
+                  <p className="text-sm text-white opacity-70">Completed</p>
+                  <p className="text-2xl font-bold text-white">{completedProjects}</p>
                 </div>
-                <div className="icon-container">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
+                <div className="p-3 bg-green-500 bg-opacity-20 rounded-lg">
+                  <Target className="w-6 h-6 text-green-400" />
                 </div>
               </div>
             </div>
-            
-            <div className="glass-card p-4 glass-card-hover">
+
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-secondary">In Progress</p>
-                  <p className="text-2xl font-bold text-blue-400">{inProgressProjects}</p>
+                  <p className="text-sm text-white opacity-70">Total Value</p>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(totalValue)}</p>
                 </div>
-                <div className="icon-container">
-                  <Clock className="w-5 h-5 text-blue-400" />
+                <div className="p-3 bg-purple-500 bg-opacity-20 rounded-lg">
+                  <DollarSign className="w-6 h-6 text-purple-400" />
                 </div>
               </div>
             </div>
-            
-            <div className="glass-card p-4 glass-card-hover">
+
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-secondary">Total Revenue</p>
-                  <p className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</p>
+                  <p className="text-sm text-white opacity-70">Deposits</p>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(totalDeposits)}</p>
                 </div>
-                <div className="icon-container">
-                  <DollarSign className="w-5 h-5 text-green-400" />
+                <div className="p-3 bg-green-500 bg-opacity-20 rounded-lg">
+                  <Users className="w-6 h-6 text-green-400" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="enhanced-card p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">Category</label>
+          <div className="glass-card p-6 mb-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-60 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search projects..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="modern-input w-full pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <div className="lg:w-48">
                 <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
                   className="modern-select w-full"
                 >
-                  <option value="">All Categories</option>
-                  {projectCategories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
+                  <option value="">All Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">Status</label>
+
+              {/* Priority Filter */}
+              <div className="lg:w-48">
                 <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
                   className="modern-select w-full"
                 >
-                  <option value="">All Statuses</option>
-                  {projectStatuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
+                  <option value="">All Priority</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
                 </select>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">Priority</label>
-                <select
-                  value={selectedPriority}
-                  onChange={(e) => setSelectedPriority(e.target.value)}
-                  className="modern-select w-full"
-                >
-                  <option value="">All Priorities</option>
-                  {projectPriorities.map(priority => (
-                    <option key={priority} value={priority}>{priority}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-secondary mb-2">Actions</label>
-                <button
-                  onClick={() => {
-                    setSelectedCategory('');
-                    setSelectedStatus('');
-                    setSelectedPriority('');
-                  }}
-                  className="modern-select w-full text-center cursor-pointer hover:bg-white hover:bg-opacity-10 transition-all duration-200"
-                >
-                  Clear Filters
-                </button>
+
+              {/* Filter Icon */}
+              <div className="flex items-center">
+                <Filter className="w-5 h-5 text-white opacity-60" />
               </div>
             </div>
           </div>
 
           {/* Projects Table */}
-          {loading ? (
-            <div className="glass-card p-6 text-center">
-              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-white">Loading projects...</p>
-                        </div>
-          ) : error ? (
-            <div className="glass-card p-6 text-center">
-              <p className="text-red-400 text-lg font-semibold">Error: {error}</p>
-              <p className="text-white text-sm mt-2">Using fallback data</p>
-            </div>
-          ) : (
+          {filteredProjects.length > 0 ? (
             <div>
               <ProjectsTable
                 projects={filteredProjects}
                 onUpdateProject={handleUpdateProject}
                 activeFilter={null}
-                currentMonth={null}
+                currentMonth={currentMonth}
               />
+            </div>
+          ) : (
+            <div className="glass-card p-12 text-center">
+              <div className="text-white opacity-60 mb-4">
+                <Calendar className="w-16 h-16 mx-auto" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">No projects found</h3>
+              <p className="text-white opacity-70 mb-6">
+                {searchTerm || statusFilter || priorityFilter 
+                  ? 'Try adjusting your filters or search terms.'
+                  : `No projects for ${currentMonth}. Add a new project to get started.`
+                }
+              </p>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="modern-button-primary"
+              >
+                Add Your First Project
+              </button>
             </div>
           )}
         </main>
       </div>
-      
+
       {/* Add Project Modal */}
-      <AddProjectModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSave={handleAddProject}
-      />
-      
-      {/* Notification */}
-      {notification.show && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg backdrop-blur-lg border ${
-          notification.type === 'success' 
-            ? 'bg-green-500 bg-opacity-20 border-green-400 text-green-100' 
-            : 'bg-red-500 bg-opacity-20 border-red-400 text-red-100'
-        }`}>
-          <div className="flex items-center">
-            <div className={`w-4 h-4 rounded-full mr-3 ${
-              notification.type === 'success' ? 'bg-green-400' : 'bg-red-400'
-            }`}></div>
-            <span className="font-medium">{notification.message}</span>
-          </div>
-        </div>
+      {showAddModal && (
+        <AddProjectModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddProject}
+        />
       )}
     </div>
   );

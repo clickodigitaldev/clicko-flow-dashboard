@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useCurrency } from '../contexts/CurrencyContext';
 import monthlyPlanningService from '../services/monthlyPlanningService';
+import { getDepositsReceivedInMonth, getPaymentsDueInMonth, getMonthlyTrendsData } from '../utils/forecastUtils';
 
 const Charts = ({ projects, currentMonth, financialSummary }) => {
   const [monthlyData, setMonthlyData] = useState([]);
@@ -41,74 +42,41 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
             // Convert to current currency for display
             const expectedRevenue = convertFromBase(expectedRevenueInBase);
             
-            // Calculate deposits received in this month
-            const monthProjectsWithDeposits = projects.filter(project => {
-              const depositDate = project.depositDate ? new Date(project.depositDate) : null;
-              const monthDate = new Date(month);
-              
-              // Check if deposit was received this month
-              return depositDate && 
-                depositDate.getMonth() === monthDate.getMonth() && 
-                depositDate.getFullYear() === monthDate.getFullYear();
-            });
-            const depositsReceivedInBase = monthProjectsWithDeposits.reduce((sum, p) => sum + (p.depositPaidInBase || p.depositPaid || 0), 0);
-            
-            // Calculate due payments for projects due in this month (regardless of when deposit was received)
-            const projectsDueThisMonth = projects.filter(project => project.monthOfPayment === month);
-            const duePaymentsInBase = projectsDueThisMonth.reduce((sum, p) => {
-              if (p.status !== 'Completed') {
-                return sum + ((p.totalAmountInBase || p.totalAmount || 0) - (p.depositPaidInBase || p.depositPaid || 0));
-              }
-              return sum;
-            }, 0);
+            // Calculate actual revenue for this month using new logic
+            const depositsReceivedInBase = getDepositsReceivedInMonth(projects, month);
+            const paymentsDueInBase = getPaymentsDueInMonth(projects, month);
             
             const depositsReceived = convertFromBase(depositsReceivedInBase);
-            const duePayments = convertFromBase(duePaymentsInBase);
-            const actualRevenue = depositsReceived + duePayments;
+            const paymentsDue = convertFromBase(paymentsDueInBase);
+            const actualRevenue = depositsReceived + paymentsDue;
 
-            console.log(`📊 ${month} - Expected Revenue (Revenue Streams Sum): ${formatCurrency(expectedRevenue)}`);
-            console.log(`📊 ${month} - Actual Revenue (Projects): ${formatCurrency(actualRevenue)}`);
+            console.log(`📊 ${month} - Expected Revenue: ${formatCurrency(expectedRevenue)}`);
+            console.log(`📊 ${month} - Deposits Received: ${formatCurrency(depositsReceived)}`);
+            console.log(`📊 ${month} - Payments Due: ${formatCurrency(paymentsDue)}`);
 
             allData.push({
               month: month,
               expected: expectedRevenue,
               actual: actualRevenue,
               depositsReceived: depositsReceived,
-              duePayments: duePayments
+              paymentsDue: paymentsDue
             });
           } catch (error) {
             console.log(`No forecast data for ${month}, using defaults`);
-            // Calculate deposits received in this month
-            const monthProjectsWithDeposits = projects.filter(project => {
-              const depositDate = project.depositDate ? new Date(project.depositDate) : null;
-              const monthDate = new Date(month);
-              
-              // Check if deposit was received this month
-              return depositDate && 
-                depositDate.getMonth() === monthDate.getMonth() && 
-                depositDate.getFullYear() === monthDate.getFullYear();
-            });
-            const depositsReceivedInBase = monthProjectsWithDeposits.reduce((sum, p) => sum + (p.depositPaidInBase || p.depositPaid || 0), 0);
-            
-            // Calculate due payments for projects due in this month (regardless of when deposit was received)
-            const projectsDueThisMonth = projects.filter(project => project.monthOfPayment === month);
-            const duePaymentsInBase = projectsDueThisMonth.reduce((sum, p) => {
-              if (p.status !== 'Completed') {
-                return sum + ((p.totalAmountInBase || p.totalAmount || 0) - (p.depositPaidInBase || p.depositPaid || 0));
-              }
-              return sum;
-            }, 0);
+            // Calculate actual revenue even if no forecast data using new logic
+            const depositsReceivedInBase = getDepositsReceivedInMonth(projects, month);
+            const paymentsDueInBase = getPaymentsDueInMonth(projects, month);
             
             const depositsReceived = convertFromBase(depositsReceivedInBase);
-            const duePayments = convertFromBase(duePaymentsInBase);
-            const actualRevenue = depositsReceived + duePayments;
+            const paymentsDue = convertFromBase(paymentsDueInBase);
+            const actualRevenue = depositsReceived + paymentsDue;
 
             allData.push({
               month: month,
               expected: 0, // No revenue streams data available
               actual: actualRevenue,
               depositsReceived: depositsReceived,
-              duePayments: duePayments
+              paymentsDue: paymentsDue
             });
           }
         }
@@ -133,17 +101,18 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
     { name: 'Completed', value: projects.filter(p => p.status === 'Completed').length, color: '#10b981' },
     { name: 'In Progress', value: projects.filter(p => p.status === 'In Progress').length, color: '#3b82f6' },
     { name: 'Pending', value: projects.filter(p => p.status === 'Pending').length, color: '#f59e0b' },
-    { name: 'On Hold', value: projects.filter(p => p.status === 'On Hold').length, color: '#ef4444' }
-  ];
+    { name: 'On Hold', value: projects.filter(p => p.status === 'On Hold').length, color: '#f97316' },
+    { name: 'Cancelled', value: projects.filter(p => p.status === 'Cancelled').length, color: '#ef4444' }
+  ].filter(item => item.value > 0);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="glass-card p-4 border border-white border-opacity-20">
-          <p className="text-white font-medium mb-2">{label}</p>
+          <p className="text-white font-semibold mb-2">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: {formatCurrency(entry.value || 0)}
+              {entry.name}: {formatCurrency(entry.value)}
             </p>
           ))}
         </div>
@@ -154,78 +123,109 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="glass-card glass-card-hover p-6 animate-fade-in-up">
-          <div className="flex items-center justify-center h-64">
-            <p className="text-white">Loading chart data...</p>
-          </div>
-        </div>
-        <div className="glass-card glass-card-hover p-6 animate-fade-in-up">
-          <div className="flex items-center justify-center h-64">
-            <p className="text-white">Loading chart data...</p>
-          </div>
-        </div>
+      <div className="glass-card p-6 text-center">
+        <p className="text-white">Loading charts...</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Monthly Revenue vs Target - 12 Months */}
-      <div className="glass-card glass-card-hover p-6 animate-fade-in-up">
-        <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-          <div className="w-2 h-8 bg-gradient-to-b from-blue-400 to-blue-600 rounded mr-3"></div>
-          Monthly Revenue vs Target (12 Months)
-        </h3>
-        <ResponsiveContainer width="100%" height={350}>
+    <div className="space-y-6">
+      {/* Monthly Revenue Trends Chart */}
+      <div className="glass-card p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Monthly Revenue Trends</h3>
+        <ResponsiveContainer width="100%" height={400}>
           <BarChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
             <XAxis 
               dataKey="month" 
-              stroke="rgba(255,255,255,0.8)"
-              fontSize={10}
-              angle={-45}
-              textAnchor="end"
-              height={80}
+              stroke="rgba(255,255,255,0.7)"
+              fontSize={12}
             />
             <YAxis 
-              stroke="rgba(255,255,255,0.8)"
+              stroke="rgba(255,255,255,0.7)"
               fontSize={12}
-              tickFormatter={(value) => `${formatCurrency(value).replace(/[^\d]/g, '')}k`}
+              tickFormatter={(value) => formatCurrency(value)}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            <Bar dataKey="expected" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Expected Revenue" />
-            <Bar dataKey="actual" fill="#06b6d4" radius={[4, 4, 0, 0]} name="Actual Revenue" />
+            <Bar 
+              dataKey="depositsReceived" 
+              name="Deposits Received" 
+              fill="#10b981" 
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar 
+              dataKey="paymentsDue" 
+              name="Payments Due" 
+              fill="#8b5cf6" 
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar 
+              dataKey="expected" 
+              name="Expected Revenue" 
+              fill="#f59e0b" 
+              radius={[4, 4, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Project Status Distribution */}
-      <div className="glass-card glass-card-hover p-6 animate-fade-in-up">
-        <h3 className="text-xl font-bold text-white mb-6 flex items-center">
-          <div className="w-2 h-8 bg-gradient-to-b from-green-400 to-emerald-600 rounded mr-3"></div>
-          Project Status (All Projects)
-        </h3>
-        <ResponsiveContainer width="100%" height={350}>
-          <PieChart>
-            <Pie
-              data={projectStatusData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
-              outerRadius={100}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {projectStatusData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="glass-card p-6">
+          <h3 className="text-xl font-bold text-white mb-4">Project Status Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={projectStatusData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {projectStatusData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Financial Summary */}
+        <div className="glass-card p-6">
+          <h3 className="text-xl font-bold text-white mb-4">Current Month Summary</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-white opacity-70">Total Projects:</span>
+              <span className="text-white font-semibold">{financialSummary.totalProjects}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white opacity-70">Completed:</span>
+              <span className="text-white font-semibold">{financialSummary.completedProjects}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white opacity-70">Completion Rate:</span>
+              <span className="text-white font-semibold">{financialSummary.completionRate}%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white opacity-70">Deposits Received:</span>
+              <span className="text-green-400 font-semibold">{formatCurrency(financialSummary.depositsReceived)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white opacity-70">Payments Due:</span>
+              <span className="text-purple-400 font-semibold">{formatCurrency(financialSummary.expectedPayments)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white opacity-70">Total Revenue:</span>
+              <span className="text-blue-400 font-semibold">{formatCurrency(financialSummary.monthlyRevenue)}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
