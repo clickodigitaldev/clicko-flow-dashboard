@@ -10,7 +10,6 @@ import Sidebar from '../components/Sidebar';
 import CurrencySwitcher from '../components/CurrencySwitcher';
 import AddProjectModal from '../components/AddProjectModal';
 import ProjectsTable from '../components/ProjectsTable';
-import MonthSelector from '../components/MonthSelector';
 import { projectCategories, projectStatuses, projectPriorities } from '../utils/constants';
 import projectService from '../services/projectService';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -19,7 +18,6 @@ const ProjectsPage = () => {
   const { formatCurrency, convertFromBase } = useCurrency();
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
-  const [currentMonth, setCurrentMonth] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('');
@@ -106,6 +104,24 @@ const ProjectsPage = () => {
       // Save to database
       const savedProject = await projectService.createProject(projectData);
       
+      // If deposit was added during project creation, create a payment record
+      if (newProject.depositPaid && parseFloat(newProject.depositPaid) > 0 && newProject.depositDate) {
+        try {
+          await projectService.addPayment(savedProject._id, {
+            amount: parseFloat(newProject.depositPaid),
+            amountCurrency: newProject.depositPaidCurrency || 'AED',
+            type: 'deposit',
+            description: `Initial deposit for ${newProject.projectName}`,
+            date: newProject.depositDate
+          });
+          
+          console.log('✅ Initial deposit payment record created during project creation');
+        } catch (paymentError) {
+          console.warn('Warning: Could not create payment record for initial deposit:', paymentError);
+          // Don't fail the entire project creation if payment record creation fails
+        }
+      }
+      
       // Add to local state
       setProjects([...projects, savedProject]);
     setShowAddModal(false);
@@ -152,11 +168,6 @@ const ProjectsPage = () => {
                 <p className="text-sm text-secondary">Manage all your projects and track progress</p>
               </div>
               <div className="flex items-center space-x-4">
-                <MonthSelector 
-                  currentMonth={currentMonth}
-                  onMonthChange={setCurrentMonth}
-                  className="relative"
-                />
                 <CurrencySwitcher />
                 <button
                   onClick={() => setShowAddModal(true)}
@@ -301,7 +312,7 @@ const ProjectsPage = () => {
                 projects={filteredProjects}
                 onUpdateProject={handleUpdateProject}
                 activeFilter={null}
-                currentMonth={currentMonth}
+                currentMonth={null}
               />
             </div>
           )}

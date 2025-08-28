@@ -9,6 +9,7 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
     clientName: '',
     projectName: '',
+    description: '',
     category: 'Web Development',
     totalAmount: '',
     totalAmountCurrency: 'AED',
@@ -79,11 +80,11 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
         throw new Error('Please fill in all required fields (Client Name, Project Name, Total Amount, Expected Start Date, and Expected Completion)');
       }
 
-      const updatedProject = {
-        ...project,
-        projectName: formData.projectName,
-        clientName: formData.clientName,
-        category: formData.category,
+              const updatedProject = {
+          ...project,
+          projectName: formData.projectName,
+          clientName: formData.clientName,
+          category: formData.category,
         totalAmount: parseFloat(formData.totalAmount),
         totalAmountCurrency: formData.totalAmountCurrency,
         depositPaid: parseFloat(formData.depositPaid) || 0,
@@ -113,30 +114,24 @@ const EditProjectModal = ({ project, isOpen, onClose, onUpdate }) => {
           if (newDepositAmount !== previousDeposit || 
               formData.depositDate !== (project.depositDate ? new Date(project.depositDate).toISOString().split('T')[0] : '')) {
             
-            // If there are existing payment records, we need to handle this carefully
-            if (project.paymentHistory && project.paymentHistory.length > 0) {
-              // For now, create a new payment record that represents the total change
-              // This ensures the payment history matches the deposit amount
+            // Calculate the incremental amount that needs to be added
+            const incrementalAmount = newDepositAmount - previousDeposit;
+            
+            if (incrementalAmount > 0) {
+              // Only create payment record for the incremental amount
               await projectService.addPayment(project._id, {
-                amount: newDepositAmount,
+                amount: incrementalAmount,
                 amountCurrency: formData.depositPaidCurrency,
                 type: 'deposit',
-                description: `Updated deposit for ${formData.projectName} - Total: ${newDepositAmount} AED`,
+                description: `Deposit payment for ${formData.projectName}`,
                 date: newDepositDate
               });
               
-              console.log('✅ Updated deposit payment record created');
-            } else {
-              // No existing payments, create the first one
-              await projectService.addPayment(project._id, {
-                amount: newDepositAmount,
-                amountCurrency: formData.depositPaidCurrency,
-                type: 'deposit',
-                description: `Initial deposit for ${formData.projectName}`,
-                date: newDepositDate
-              });
-              
-              console.log('✅ Initial deposit payment record created');
+              console.log(`✅ Incremental deposit payment record created: ${incrementalAmount} ${formData.depositPaidCurrency}`);
+            } else if (incrementalAmount < 0) {
+              // If deposit was reduced, we need to handle this case
+              // For now, just log a warning - in a real system you might want to create a refund record
+              console.warn(`⚠️ Deposit amount reduced by ${Math.abs(incrementalAmount)}. Consider creating a refund record.`);
             }
           }
         } catch (paymentError) {
