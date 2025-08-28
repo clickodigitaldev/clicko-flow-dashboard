@@ -7,6 +7,7 @@ import ProjectsTable from './ProjectsTable';
 import AlertsSection from './AlertsSection';
 import Charts from './Charts';
 import CurrencySwitcher from './CurrencySwitcher';
+import MonthSelector from './MonthSelector';
 import { getFinancialSummary } from '../utils/forecastUtils';
 import projectService from '../services/projectService';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -14,7 +15,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 const Dashboard = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentMonth, setCurrentMonth] = useState('August 2025');
+  const [currentMonth, setCurrentMonth] = useState('');
   const [activeFilter, setActiveFilter] = useState(null);
   const [settings] = useState({
     monthlyTarget: 150000,
@@ -83,18 +84,11 @@ const Dashboard = () => {
                 <p className="text-sm text-secondary">Overview of your business performance</p>
               </div>
               <div className="flex items-center space-x-6">
-                <select
-                  value={currentMonth}
-                  onChange={(e) => setCurrentMonth(e.target.value)}
-                  className="modern-select min-w-[140px]"
-                >
-                  <option value="August 2025">August 2025</option>
-                  <option value="September 2025">September 2025</option>
-                  <option value="October 2025">October 2025</option>
-                  <option value="November 2025">November 2025</option>
-                  <option value="December 2025">December 2025</option>
-                  <option value="January 2026">January 2026</option>
-                </select>
+                <MonthSelector 
+                  currentMonth={currentMonth}
+                  onMonthChange={setCurrentMonth}
+                  className="relative"
+                />
                 <CurrencySwitcher />
               </div>
             </div>
