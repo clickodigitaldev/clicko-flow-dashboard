@@ -41,16 +41,11 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
             // Convert to current currency for display
             const expectedRevenue = convertFromBase(expectedRevenueInBase);
             
-            // Calculate actual revenue for this month (same logic as homepage widgets) - convert from base currency
+            // Calculate actual revenue for this month (financial logic) - convert from base currency
+            // Only include projects that are DUE this month or have deposits RECEIVED this month
             const monthProjects = projects.filter(project => {
-              const projectStartDate = project.expectedStartDate ? new Date(project.expectedStartDate) : null;
               const depositDate = project.depositDate ? new Date(project.depositDate) : null;
               const monthDate = new Date(month);
-              
-              // Check if project started this month
-              const startedThisMonth = projectStartDate && 
-                projectStartDate.getMonth() === monthDate.getMonth() && 
-                projectStartDate.getFullYear() === monthDate.getFullYear();
               
               // Check if deposit was received this month
               const depositReceivedThisMonth = depositDate && 
@@ -60,12 +55,7 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
               // Check if project is due this month
               const dueThisMonth = project.monthOfPayment === month;
               
-              // Check if project is ongoing (started before this month and not completed)
-              const isOngoing = projectStartDate && 
-                projectStartDate < monthDate && 
-                project.status !== 'Completed';
-              
-              return startedThisMonth || depositReceivedThisMonth || dueThisMonth || isOngoing;
+              return depositReceivedThisMonth || dueThisMonth;
             });
             const depositsReceivedInBase = monthProjects.reduce((sum, p) => sum + (p.depositPaidInBase || p.depositPaid || 0), 0);
             const duePaymentsInBase = monthProjects.reduce((sum, p) => sum + ((p.totalAmountInBase || p.totalAmount || 0) - (p.depositPaidInBase || p.depositPaid || 0)), 0);
@@ -86,16 +76,11 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
             });
           } catch (error) {
             console.log(`No forecast data for ${month}, using defaults`);
-            // Calculate actual revenue even if no forecast data (same logic as homepage widgets) - convert from base currency
+            // Calculate actual revenue even if no forecast data (financial logic) - convert from base currency
+            // Only include projects that are DUE this month or have deposits RECEIVED this month
             const monthProjects = projects.filter(project => {
-              const projectStartDate = project.expectedStartDate ? new Date(project.expectedStartDate) : null;
               const depositDate = project.depositDate ? new Date(project.depositDate) : null;
               const monthDate = new Date(month);
-              
-              // Check if project started this month
-              const startedThisMonth = projectStartDate && 
-                projectStartDate.getMonth() === monthDate.getMonth() && 
-                projectStartDate.getFullYear() === monthDate.getFullYear();
               
               // Check if deposit was received this month
               const depositReceivedThisMonth = depositDate && 
@@ -105,12 +90,7 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
               // Check if project is due this month
               const dueThisMonth = project.monthOfPayment === month;
               
-              // Check if project is ongoing (started before this month and not completed)
-              const isOngoing = projectStartDate && 
-                projectStartDate < monthDate && 
-                project.status !== 'Completed';
-              
-              return startedThisMonth || depositReceivedThisMonth || dueThisMonth || isOngoing;
+              return depositReceivedThisMonth || dueThisMonth;
             });
             const depositsReceivedInBase = monthProjects.reduce((sum, p) => sum + (p.depositPaidInBase || p.depositPaid || 0), 0);
             const duePaymentsInBase = monthProjects.reduce((sum, p) => sum + ((p.totalAmountInBase || p.totalAmount || 0) - (p.depositPaidInBase || p.depositPaid || 0)), 0);

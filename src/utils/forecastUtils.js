@@ -12,20 +12,10 @@ export const getFinancialSummary = (projects, currentMonth, settings) => {
   // Get current month date for calculations
   const currentMonthDate = new Date(currentMonth);
   
-  // Filter projects with activity in current month:
-  // 1. Projects that started this month
-  // 2. Projects with deposits received this month
-  // 3. Projects due this month
-  // 4. Ongoing projects (for progress tracking)
+  // For financial calculations (revenue, deposits, expected payments):
+  // Only include projects that are DUE this month or have deposits RECEIVED this month
   const currentMonthProjects = projects.filter(project => {
-    const projectStartDate = project.expectedStartDate ? parseISO(project.expectedStartDate) : null;
-    const projectDueDate = project.expectedCompletion ? parseISO(project.expectedCompletion) : null;
     const depositDate = project.depositDate ? parseISO(project.depositDate) : null;
-    
-    // Check if project started this month
-    const startedThisMonth = projectStartDate && 
-      isSameMonth(projectStartDate, currentMonthDate) && 
-      isSameYear(projectStartDate, currentMonthDate);
     
     // Check if deposit was received this month
     const depositReceivedThisMonth = depositDate && 
@@ -35,12 +25,7 @@ export const getFinancialSummary = (projects, currentMonth, settings) => {
     // Check if project is due this month
     const dueThisMonth = project.monthOfPayment === currentMonth;
     
-    // Check if project is ongoing (started before this month and not completed)
-    const isOngoing = projectStartDate && 
-      projectStartDate < currentMonthDate && 
-      project.status !== 'Completed';
-    
-    return startedThisMonth || depositReceivedThisMonth || dueThisMonth || isOngoing;
+    return depositReceivedThisMonth || dueThisMonth;
   });
   
   // Calculate deposits received in current month (Revenue this month)
@@ -130,6 +115,36 @@ export const getFinancialSummary = (projects, currentMonth, settings) => {
       isProfitPositive
     }
   };
+};
+
+// Separate function for project table filtering (shows all active projects)
+export const getActiveProjectsForTable = (projects, currentMonth) => {
+  const currentMonthDate = new Date(currentMonth);
+  
+  return projects.filter(project => {
+    const projectStartDate = project.expectedStartDate ? parseISO(project.expectedStartDate) : null;
+    const depositDate = project.depositDate ? parseISO(project.depositDate) : null;
+    
+    // Check if project started this month
+    const startedThisMonth = projectStartDate && 
+      isSameMonth(projectStartDate, currentMonthDate) && 
+      isSameYear(projectStartDate, currentMonthDate);
+    
+    // Check if deposit was received this month
+    const depositReceivedThisMonth = depositDate && 
+      isSameMonth(depositDate, currentMonthDate) && 
+      isSameYear(depositDate, currentMonthDate);
+    
+    // Check if project is due this month
+    const dueThisMonth = project.monthOfPayment === currentMonth;
+    
+    // Check if project is ongoing (started before this month and not completed)
+    const isOngoing = projectStartDate && 
+      projectStartDate < currentMonthDate && 
+      project.status !== 'Completed';
+    
+    return startedThisMonth || depositReceivedThisMonth || dueThisMonth || isOngoing;
+  });
 };
 
 export const getMonthlyData = (projects, month) => {
