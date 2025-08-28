@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { X, Save, DollarSign, Calendar } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import projectService from '../services/projectService';
 
 const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
-  const { currentCurrency } = useCurrency();
+  const { currentCurrency, formatCurrency, getAvailableCurrencies } = useCurrency();
   const [formData, setFormData] = useState({
     amount: '',
     amountCurrency: 'AED', // Will be set to current currency
@@ -11,6 +12,8 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
     description: '',
     date: new Date().toISOString().split('T')[0]
   });
+
+  const currencies = getAvailableCurrencies();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -46,26 +49,14 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
         throw new Error('Please enter a valid amount');
       }
 
-      // Add payment via API
-      const response = await fetch(`http://localhost:5001/api/projects/${project._id}/payments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          amount,
-          amountCurrency: formData.amountCurrency,
-          type: formData.type,
-          description: formData.description
-        })
+      // Add payment via projectService
+      const updatedProject = await projectService.addPayment(project._id, {
+        amount,
+        amountCurrency: formData.amountCurrency,
+        type: formData.type,
+        description: formData.description,
+        date: formData.date
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add payment');
-      }
-
-      const updatedProject = await response.json();
       
       // Call parent callback
       onUpdate(updatedProject);
@@ -114,7 +105,7 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
               <span className="font-medium">Client:</span> {project.clientName}
             </p>
             <p className="text-white text-sm">
-              <span className="font-medium">Current Deposit:</span> ${project.depositPaid || 0}
+              <span className="font-medium">Current Deposit:</span> {formatCurrency(project.depositPaid || 0)}
             </p>
           </div>
 
@@ -131,22 +122,33 @@ const AddDepositModal = ({ project, isOpen, onClose, onUpdate }) => {
               <label className="block text-white text-sm font-medium mb-2">
                 Amount *
               </label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-60 w-4 h-4" />
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount}
+              <div className="flex space-x-2">
+                <div className="relative flex-1">
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white opacity-60 w-4 h-4" />
+                  <input
+                    type="number"
+                    name="amount"
+                    value={formData.amount}
+                    onChange={handleInputChange}
+                    className="modern-input w-full pl-12"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <select
+                  name="amountCurrency"
+                  value={formData.amountCurrency}
                   onChange={handleInputChange}
-                  className="modern-input w-full pl-12"
-                  min="0.01"
-                  step="0.01"
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              <div className="mt-1 text-xs text-white opacity-60">
-                Currency: {currentCurrency}
+                  className="modern-select w-24"
+                >
+                  {currencies.map(currency => (
+                    <option key={currency.code} value={currency.code}>
+                      {currency.code}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

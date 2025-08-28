@@ -145,6 +145,32 @@ class ProjectService {
       throw error;
     }
   }
+
+  // Add payment to project
+  async addPayment(projectId, paymentData) {
+    try {
+      console.log('💰 Adding payment to project:', projectId, paymentData);
+      const response = await fetch(`${this.baseURL}/projects/${projectId}/payments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(paymentData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Payment added successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error adding payment:', error);
+      throw error;
+    }
+  }
 }
 
 const projectService = new ProjectService();
