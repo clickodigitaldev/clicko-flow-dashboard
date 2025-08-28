@@ -137,6 +137,44 @@ const projectSchema = new mongoose.Schema({
     },
     description: String
   }],
+  // Payment schedule for structured payment tracking
+  paymentSchedule: [{
+    paymentNumber: {
+      type: Number,
+      required: true
+    },
+    amount: {
+      type: Number,
+      required: true
+    },
+    amountCurrency: {
+      type: String,
+      enum: ['AED', 'USD', 'BDT'],
+      default: 'AED',
+      required: true
+    },
+    amountInBase: {
+      type: Number,
+      required: true
+    },
+    dueDate: {
+      type: Date,
+      required: true
+    },
+    isReceived: {
+      type: Boolean,
+      default: false
+    },
+    receivedDate: Date,
+    receivedAmount: {
+      type: Number,
+      default: 0
+    },
+    receivedAmountInBase: {
+      type: Number,
+      default: 0
+    }
+  }],
   // Milestones with currency support
   milestones: [{
     name: {

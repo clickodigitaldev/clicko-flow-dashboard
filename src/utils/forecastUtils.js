@@ -42,47 +42,67 @@ export const getFinancialSummary = (projects, currentMonth, settings) => {
     return total;
   }, 0);
 
-  // Calculate expected payments (remaining payments for projects due this month)
-  // Rule: If due date is this month → count remaining value under "Expected Payments"
-  const expectedPayments = currentMonthProjects.reduce((total, project) => {
-    // Only count remaining payments for projects that are not completed
-    if (project.status !== 'Completed') {
-      const remainingPayment = project.totalAmount - project.depositPaid;
-      return total + remainingPayment;
-    }
-    return total;
+  // Calculate expected payments from payment schedule for current month
+  const expectedPayments = projects.reduce((total, project) => {
+    if (project.status === 'Completed') return total;
+    
+    // Get unpaid scheduled payments for current month
+    const currentMonthPayments = project.paymentSchedule?.filter(payment => {
+      const paymentDate = parseISO(payment.dueDate);
+      const isDueThisMonth = isSameMonth(paymentDate, currentMonthDate) && isSameYear(paymentDate, currentMonthDate);
+      return isDueThisMonth && !payment.isReceived;
+    }) || [];
+    
+    const monthExpectedAmount = currentMonthPayments.reduce((sum, payment) => {
+      return sum + (payment.amount - payment.receivedAmount);
+    }, 0);
+    
+    return total + monthExpectedAmount;
   }, 0);
 
-  // Also include projects that are due this month but might not have deposits received this month
-  const projectsDueThisMonth = projects.filter(project => {
-    return project.monthOfPayment === currentMonth && project.status !== 'Completed';
-  });
-
-  const totalExpectedPayments = projectsDueThisMonth.reduce((total, project) => {
-    const remainingPayment = project.totalAmount - project.depositPaid;
-    return total + remainingPayment;
+  // Calculate total deal value for current month (from payment schedule)
+  const totalDealValue = projects.reduce((sum, project) => {
+    // Get scheduled payments for current month
+    const currentMonthPayments = project.paymentSchedule?.filter(payment => {
+      const paymentDate = parseISO(payment.dueDate);
+      const isDueThisMonth = isSameMonth(paymentDate, currentMonthDate) && isSameYear(paymentDate, currentMonthDate);
+      return isDueThisMonth;
+    }) || [];
+    
+    const monthTotalAmount = currentMonthPayments.reduce((paymentSum, payment) => {
+      return paymentSum + payment.amount;
+    }, 0);
+    
+    return sum + monthTotalAmount;
   }, 0);
 
-  // Calculate total deal value for current month
-  const totalDealValue = currentMonthProjects.reduce((sum, p) => sum + p.totalAmount, 0);
-
-  // Calculate total deposits for current month projects (regardless of when received)
-  const totalDepositsForCurrentMonth = currentMonthProjects.reduce((sum, p) => sum + p.depositPaid, 0);
-
-  // Calculate total deal value for projects due this month
-  const totalDealValueForDueProjects = projectsDueThisMonth.reduce((sum, p) => sum + p.totalAmount, 0);
+  // Calculate total deposits for current month projects (from payment schedule)
+  const totalDepositsForCurrentMonth = projects.reduce((sum, project) => {
+    // Get received payments for current month
+    const currentMonthPayments = project.paymentSchedule?.filter(payment => {
+      const paymentDate = parseISO(payment.dueDate);
+      const isDueThisMonth = isSameMonth(paymentDate, currentMonthDate) && isSameYear(paymentDate, currentMonthDate);
+      return isDueThisMonth && payment.isReceived;
+    }) || [];
+    
+    const monthReceivedAmount = currentMonthPayments.reduce((paymentSum, payment) => {
+      return paymentSum + payment.receivedAmount;
+    }, 0);
+    
+    return sum + monthReceivedAmount;
+  }, 0);
 
   // Calculate KPIs
-  const totalProjects = projectsDueThisMonth.length; // Projects due this month
-  const completedProjects = projectsDueThisMonth.filter(p => p.status === 'Completed').length;
+  const totalProjects = currentMonthProjects.length;
+  const completedProjects = currentMonthProjects.filter(p => p.status === 'Completed').length;
   const completionRate = totalProjects > 0 ? ((completedProjects / totalProjects) * 100) : 0;
-  const depositRate = totalDealValueForDueProjects > 0 ? ((totalDepositsForCurrentMonth / totalDealValueForDueProjects) * 100) : 0;
+  const depositRate = totalDealValue > 0 ? ((totalDepositsForCurrentMonth / totalDealValue) * 100) : 0;
 
   // Calculate break-even analysis
   const totalExpenses = settings.overheadExpenses + settings.generalExpenses;
   
-  // Total monthly revenue = deposits received this month + expected payments for projects due this month
-  const monthlyRevenue = depositsReceivedThisMonth + totalExpectedPayments;
+  // Total monthly revenue = deposits received this month + expected payments
+  const monthlyRevenue = depositsReceivedThisMonth + expectedPayments;
   
   // Check if break-even is achieved
   const isBreakEvenAchieved = monthlyRevenue >= totalExpenses;
@@ -108,8 +128,8 @@ export const getFinancialSummary = (projects, currentMonth, settings) => {
     // Financial KPIs
     depositsReceived: depositsReceivedThisMonth,
     totalDepositsForCurrentMonth,
-    expectedPayments: totalExpectedPayments,
-    totalDealValue: totalDealValueForDueProjects,
+    expectedPayments,
+    totalDealValue,
     depositRate: depositRate.toFixed(1),
     
     // Revenue and Target KPIs

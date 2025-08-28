@@ -79,7 +79,8 @@ router.post('/', async (req, res) => {
       priority = 'Medium',
       description,
       tags,
-      notes
+      notes,
+      paymentSchedule = []
     } = req.body;
 
     // Validate currency codes
@@ -93,6 +94,21 @@ router.post('/', async (req, res) => {
     // Convert amounts to base currency (AED)
     const totalAmountInBase = currencyService.convertToBase(totalAmount, totalAmountCurrency);
     const depositPaidInBase = currencyService.convertToBase(depositPaid, depositPaidCurrency);
+
+    // Process payment schedule
+    const processedPaymentSchedule = paymentSchedule.map((payment, index) => {
+      const amountInBase = currencyService.convertToBase(payment.amount, payment.amountCurrency);
+      return {
+        paymentNumber: index + 1,
+        amount: payment.amount,
+        amountCurrency: payment.amountCurrency,
+        amountInBase,
+        dueDate: payment.dueDate,
+        isReceived: false,
+        receivedAmount: 0,
+        receivedAmountInBase: 0
+      };
+    });
 
     // Generate CL format project ID if not provided
     let finalProjectId = projectId;
@@ -155,7 +171,8 @@ router.post('/', async (req, res) => {
       monthOfPayment,
       description,
       tags,
-      notes
+      notes,
+      paymentSchedule: processedPaymentSchedule
     });
 
     res.status(201).json(project);
