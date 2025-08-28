@@ -22,10 +22,32 @@ const ProjectsTable = ({ projects, onUpdateProject, activeFilter, currentMonth }
 
   // Filter projects based on search term, filters, and active filter
   const filteredProjects = projects.filter(project => {
-    // First apply current month filter if provided
+    // First apply current month filter if provided (Rule 1: start date OR due date)
     let matchesMonth = true;
     if (currentMonth) {
-      matchesMonth = project.monthOfPayment === currentMonth;
+      const targetMonthDate = new Date(currentMonth);
+      
+      // Check if project start date is in target month
+      let hasStartDateInMonth = false;
+      if (project.expectedStartDate) {
+        const startDate = new Date(project.expectedStartDate);
+        if (startDate.getMonth() === targetMonthDate.getMonth() && 
+            startDate.getFullYear() === targetMonthDate.getFullYear()) {
+          hasStartDateInMonth = true;
+        }
+      }
+      
+      // Check if project due date is in target month
+      let hasDueDateInMonth = false;
+      if (project.expectedCompletion) {
+        const dueDate = new Date(project.expectedCompletion);
+        if (dueDate.getMonth() === targetMonthDate.getMonth() && 
+            dueDate.getFullYear() === targetMonthDate.getFullYear()) {
+          hasDueDateInMonth = true;
+        }
+      }
+      
+      matchesMonth = hasStartDateInMonth || hasDueDateInMonth;
     }
     
     // Apply search and basic filters
