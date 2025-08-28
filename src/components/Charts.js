@@ -9,12 +9,12 @@ const Charts = ({ projects, currentMonth, financialSummary }) => {
   const [loading, setLoading] = useState(true);
   const { formatCurrency, convertFromBase } = useCurrency();
 
-  // Generate 12 months array
+  // Generate 12 months array starting from July 2025
   const generateMonths = () => {
     const months = [];
-    const currentDate = new Date();
+    const startDate = new Date(2025, 6, 1); // July 2025 (month is 0-indexed, so 6 = July)
     for (let i = 0; i < 12; i++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 1);
+      const date = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
       const monthName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       months.push(monthName);
     }
